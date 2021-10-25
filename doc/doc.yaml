@@ -1,0 +1,43 @@
+basePath: /ll
+consumes:
+- application/json
+definitions:
+  ErrRepSt:
+    properties:
+      error_code:
+        description: Код ошибки
+        type: string
+        x-go-name: ErrorCode
+    type: object
+    x-go-package: github.com/mechta-market/limelog/internal/adapters/httpapi/rest
+host: api.zeon.mechta.market
+info:
+  description: |-
+    <br/><details>
+    <summary>**Константы**</summary>
+    ```
+    # User types
+    UsrTypeUndefined = 0
+    UsrTypeAdmin     = 1
+    ```
+    </details>
+  title: LimeLog API.
+  version: 1.0.0
+paths: {}
+produces:
+- application/json
+responses:
+  errRep:
+    description: ""
+    schema:
+      $ref: '#/definitions/ErrRepSt'
+schemes:
+- https
+- http
+securityDefinitions:
+  BearerToken:
+    description: 'Пример: `Authorization: Bearer 2cf24dba5fb0a30e26e83b2`'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

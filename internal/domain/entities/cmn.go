@@ -1,0 +1,18 @@
+package entities
+
+import "time"
+
+type PaginationParams struct {
+	Offset int64 `json:"page"`
+	Limit  int64 `json:"page_size"`
+}
+
+type PeriodFilterPars struct {
+	TsGTE *time.Time
+	TsLTE *time.Time
+}
+
+type ChartVByTime struct {
+	Ts time.Time `json:"ts"`
+	V  int64     `json:"v"`
+}
