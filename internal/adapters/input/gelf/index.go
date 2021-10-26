@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"compress/gzip"
 	"compress/zlib"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
-	"os"
 
 	"github.com/mechta-market/limelog/internal/interfaces"
 )
@@ -163,11 +163,11 @@ func (o *St) handleMsg(msg []byte) {
 		return
 	}
 
-	// o.lg.Infow("GELF message", "message", string(msgRaw))
+	fmt.Println("GELF message", string(msgRaw))
 
-	err = ioutil.WriteFile("./out.txt", msgRaw, os.ModePerm)
-	if err != nil {
-		o.lg.Errorw("Fail to WriteFile", err)
-		return
-	}
+	// err = ioutil.WriteFile("./out.txt", msgRaw, os.ModePerm)
+	// if err != nil {
+	// 	o.lg.Errorw("Fail to WriteFile", err)
+	// 	return
+	// }
 }
