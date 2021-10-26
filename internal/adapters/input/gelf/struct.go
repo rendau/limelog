@@ -41,7 +41,7 @@ import (
 }
 */
 
-type chunkedMsgSt struct {
+type udpChunkedMsgSt struct {
 	l      int
 	sq     int
 	chunks [][]byte

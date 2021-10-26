@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mechta-market/limelog/internal/adapters/db/pg"
+	"github.com/mechta-market/limelog/internal/adapters/db/mongo"
 	"github.com/mechta-market/limelog/internal/adapters/httpapi/rest"
 	"github.com/mechta-market/limelog/internal/adapters/input/gelf"
 	"github.com/mechta-market/limelog/internal/adapters/logger/zap"
@@ -38,7 +38,15 @@ func Execute() {
 		log.Fatal(err)
 	}
 
-	app.db, err = pg.New(app.lg, viper.GetString("PG_DSN"), debug)
+	app.db, err = mongo.New(
+		app.lg,
+		viper.GetString("mongo_username"),
+		viper.GetString("mongo_password"),
+		viper.GetString("mongo_host"),
+		viper.GetString("mongo_db_name"),
+		viper.GetString("mongo_replica_set"),
+		debug,
+	)
 	if err != nil {
 		app.lg.Fatal(err)
 	}
@@ -61,7 +69,7 @@ func Execute() {
 		app.ucs,
 	)
 
-	app.inputGelf, err = gelf.NewUDP(app.lg, viper.GetString("INPUT_GELF_ADDR"))
+	app.inputGelf, err = gelf.NewUDP(app.lg, viper.GetString("INPUT_GELF_ADDR"), app.ucs)
 	if err != nil {
 		app.lg.Fatal(err)
 	}
@@ -110,6 +118,7 @@ func loadConf() {
 	viper.SetDefault("DEBUG", "false")
 	viper.SetDefault("HTTP_LISTEN", ":80")
 	viper.SetDefault("LOG_LEVEL", "debug")
+	viper.SetDefault("MONGO_HOST", "localhost:27017")
 
 	confFilePath := os.Getenv("CONF_PATH")
 	if confFilePath == "" {

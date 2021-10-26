@@ -1,58 +1,53 @@
 package mongo
 
-// func (d *St) LogCreate(ctx context.Context, obj *entities.LogCUSt, upsert bool) error {
-// var err error
-//
-// collection := d.Db.Collection("log")
-//
-// res := collection.FindOneAndUpdate(ctx, bson.M{"id": id}, bson.M{
-// "$set": obj,
-// }, &options.FindOneAndUpdateOptions{Upsert: &upsert})
-// if err = res.Err(); err != nil {
-// if err != mongo.ErrNoDocuments {
-// return d.handleErr(err)
-// }
-// }
-//
-// return nil
-// }
-//
-// func (d *St) LogList(ctx context.Context, pars *entities.LogListParsSt) ([]*entities.LogSt, error) {
-// 	collection := d.Db.Collection("log")
-//
-// 	ops := &options.FindOptions{}
-//
-// 	if pars != nil {
-// 		if pars.Projection != nil {
-// 			ops.Projection = *pars.Projection
-// 		}
-// 	}
-//
-// 	cur, err := collection.Find(ctx, bson.M{}, ops)
-// 	if err != nil {
-// 		return nil, d.handleErr(err)
-// 	}
-// 	defer cur.Close(ctx)
-//
-// 	result := make([]*entities.LogSt, 0)
-//
-// 	for cur.Next(ctx) {
-// 		obj := &entities.LogSt{}
-//
-// 		err = cur.Decode(obj)
-// 		if err != nil {
-// 			return nil, d.handleErr(err)
-// 		}
-//
-// 		result = append(result, obj)
-// 	}
-// 	if err = cur.Err(); err != nil {
-// 		return nil, d.handleErr(err)
-// 	}
-//
-// 	return result, nil
-// }
-//
+import (
+	"context"
+
+	"github.com/mechta-market/limelog/internal/domain/entities"
+	"go.mongodb.org/mongo-driver/bson"
+)
+
+func (d *St) LogCreate(ctx context.Context, obj map[string]interface{}) error {
+	var err error
+
+	collection := d.Db.Collection("log")
+
+	_, err = collection.InsertOne(ctx, obj)
+	if err != nil {
+		return d.handleErr(err)
+	}
+
+	return nil
+}
+
+func (d *St) LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, error) {
+	collection := d.Db.Collection("log")
+
+	cur, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, d.handleErr(err)
+	}
+	defer cur.Close(ctx)
+
+	result := make([]map[string]interface{}, 0)
+
+	for cur.Next(ctx) {
+		obj := map[string]interface{}{}
+
+		err = cur.Decode(obj)
+		if err != nil {
+			return nil, d.handleErr(err)
+		}
+
+		result = append(result, obj)
+	}
+	if err = cur.Err(); err != nil {
+		return nil, d.handleErr(err)
+	}
+
+	return result, nil
+}
+
 // func (d *St) LogGet(ctx context.Context, id string, pars *entities.LogGetParsSt) (*entities.LogSt, error) {
 // 	var err error
 //

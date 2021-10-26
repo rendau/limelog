@@ -4,11 +4,17 @@ import (
 	"bytes"
 	"compress/gzip"
 	"compress/zlib"
-	"fmt"
+	"context"
+	"encoding/json"
 	"io"
 	"io/ioutil"
+	"math"
 	"net"
+	"strings"
+	"time"
 
+	"github.com/mechta-market/limelog/internal/cns"
+	"github.com/mechta-market/limelog/internal/domain/usecases"
 	"github.com/mechta-market/limelog/internal/interfaces"
 )
 
@@ -27,12 +33,14 @@ type St struct {
 
 	udpAddr *net.UDPAddr
 
+	ucs *usecases.St
+
 	conn net.Conn
 
-	chunkedMsgs map[string]*chunkedMsgSt
+	udpChunkedMsgs map[string]*udpChunkedMsgSt
 }
 
-func NewUDP(lg interfaces.Logger, addr string) (*St, error) {
+func NewUDP(lg interfaces.Logger, addr string, ucs *usecases.St) (*St, error) {
 	udpAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		lg.Errorw("Fail to ResolveUDPAddr", err)
@@ -41,11 +49,10 @@ func NewUDP(lg interfaces.Logger, addr string) (*St, error) {
 	}
 
 	return &St{
-		lg: lg,
-
-		udpAddr: udpAddr,
-
-		chunkedMsgs: map[string]*chunkedMsgSt{},
+		lg:             lg,
+		udpAddr:        udpAddr,
+		ucs:            ucs,
+		udpChunkedMsgs: map[string]*udpChunkedMsgSt{},
 	}, nil
 }
 
@@ -73,12 +80,12 @@ func (o *St) StartUDP(eChan chan<- error) {
 
 			// o.lg.Infow("UDP packet", "data", string(cBuf[:n]))
 
-			o.handlePacket(cBuf[:n])
+			o.HandlePacket(cBuf[:n])
 		}
 	}()
 }
 
-func (o *St) handlePacket(pkt []byte) {
+func (o *St) HandlePacket(pkt []byte) {
 	if len(pkt) < 3 {
 		return
 	}
@@ -91,13 +98,13 @@ func (o *St) handlePacket(pkt []byte) {
 		if len(pkt) > 12 {
 			mid, seq, seqCount := string(pkt[2:2+8]), pkt[2+8], pkt[2+8+1]
 
-			chunkedMsg, ok := o.chunkedMsgs[mid]
+			chunkedMsg, ok := o.udpChunkedMsgs[mid]
 			if !ok {
-				chunkedMsg = &chunkedMsgSt{
+				chunkedMsg = &udpChunkedMsgSt{
 					sq:     int(seqCount),
 					chunks: make([][]byte, seqCount),
 				}
-				o.chunkedMsgs[mid] = chunkedMsg
+				o.udpChunkedMsgs[mid] = chunkedMsg
 			}
 
 			payload := pkt[12:]
@@ -118,9 +125,7 @@ func (o *St) handlePacket(pkt []byte) {
 					}
 				}
 
-				delete(o.chunkedMsgs, mid)
-
-				fmt.Println("Chunked gelf-message")
+				delete(o.udpChunkedMsgs, mid)
 			}
 		}
 	} else { // not chunked
@@ -128,48 +133,116 @@ func (o *St) handlePacket(pkt []byte) {
 	}
 
 	if msg != nil {
-		o.handleMsg(msg)
+		o.HandleMsg(msg)
 	}
 }
 
-func (o *St) handleMsg(msg []byte) {
+func (o *St) HandleMsg(data []byte) {
 	var err error
 
-	if len(msg) < 3 {
+	if len(data) < 3 {
 		return
 	}
 
-	magic := msg[:2]
+	magic := data[:2]
 
 	var msgReader io.Reader
 
 	if bytes.Equal(magic, magicGzip) {
-		msgReader, err = gzip.NewReader(bytes.NewReader(msg))
+		msgReader, err = gzip.NewReader(bytes.NewReader(data))
 		if err != nil {
 			o.lg.Errorw("Fail to gzip.NewReader", err)
 			return
 		}
 	} else if magic[0] == magicZlib[0] && (int(magic[0])*256+int(magic[1]))%31 == 0 {
-		msgReader, err = zlib.NewReader(bytes.NewReader(msg))
+		msgReader, err = zlib.NewReader(bytes.NewReader(data))
 		if err != nil {
 			o.lg.Errorw("Fail to zlib.NewReader", err)
 			return
 		}
 	} else {
-		msgReader = bytes.NewReader(msg)
+		msgReader = bytes.NewReader(data)
 	}
 
-	msgRaw, err := ioutil.ReadAll(msgReader)
+	dataRaw, err := ioutil.ReadAll(msgReader)
 	if err != nil {
-		o.lg.Errorw("Fail to ioutil.ReadAll from msg", err)
+		o.lg.Errorw("Fail to ioutil.ReadAll from data", err)
 		return
 	}
 
-	fmt.Println("GELF message", string(msgRaw))
+	// fmt.Println("GELF message", string(dataRaw))
 
-	// err = ioutil.WriteFile("./out.txt", msgRaw, os.ModePerm)
-	// if err != nil {
-	// 	o.lg.Errorw("Fail to WriteFile", err)
-	// 	return
-	// }
+	dataObj := map[string]interface{}{}
+
+	err = json.Unmarshal(dataRaw, &dataObj)
+	if err != nil {
+		o.lg.Errorw("Fail to unmarshal json", err)
+		return
+	}
+
+	res := map[string]interface{}{}
+
+	// system fields
+	for k, v := range dataObj {
+		if strings.HasPrefix(k, "_") {
+			res[cns.SystemFieldPrefix+k[1:]] = v
+		}
+	}
+
+	// timestamp
+	if timestamp, ok := dataObj["timestamp"]; ok {
+		switch v := timestamp.(type) {
+		case float64:
+			sec, dec := math.Modf(v)
+			res[cns.SfTsFieldName] = time.Unix(int64(sec), int64(dec*(1e9)))
+		case int64:
+			res[cns.SfTsFieldName] = time.Unix(v, 0)
+		default:
+			res[cns.SfTsFieldName] = time.Now().UTC()
+		}
+	}
+
+	// message
+	{
+		var msg string
+
+		if sMsg, ok := dataObj["short_message"]; ok {
+			switch v := sMsg.(type) {
+			case string:
+				msg = v
+			}
+		}
+
+		if msg == "" {
+			if fMsg, ok := dataObj["full_message"]; ok {
+				switch v := fMsg.(type) {
+				case string:
+					msg = v
+				}
+			}
+		}
+
+		res[cns.SfMessageFieldName] = msg
+		res[cns.MessageFieldName] = msg
+
+		if msg != "" {
+			obj := map[string]interface{}{}
+
+			// try to parse json
+			err = json.Unmarshal([]byte(msg), &obj)
+			if err != nil {
+				obj = map[string]interface{}{}
+			}
+
+			for k, v := range obj {
+				res[k] = v
+			}
+
+			if v, ok := res["msg"]; ok { // if there "msg" field in json
+				res[cns.MessageFieldName] = v
+			}
+		}
+	}
+
+	o.ucs.LogHandleMsg(context.Background(), res)
 }

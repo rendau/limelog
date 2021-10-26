@@ -6,7 +6,14 @@ import (
 )
 
 func resetDb() {
-	// var err error
+	var err error
+
+	ctx := context.Background()
+
+	err = app.db.Db.Collection("log").Drop(ctx)
+	if err != nil {
+		app.lg.Fatal(err)
+	}
 }
 
 func prepareDbForNewTest() {

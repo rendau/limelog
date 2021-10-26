@@ -7,12 +7,11 @@ import (
 )
 
 type Db interface {
-	ContextWithTransaction(ctx context.Context) (context.Context, error)
-	CommitContextTransaction(ctx context.Context) error
-	RollbackContextTransaction(ctx context.Context)
-	RenewContextTransaction(ctx context.Context) error
-
 	// config
 	ConfigGet(ctx context.Context) (*entities.ConfigSt, error)
 	ConfigSet(ctx context.Context, config *entities.ConfigSt) error
+
+	// log
+	LogCreate(ctx context.Context, obj map[string]interface{}) error
+	LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, error)
 }

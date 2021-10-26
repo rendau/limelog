@@ -5,7 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mechta-market/limelog/internal/adapters/db/pg"
+	"github.com/mechta-market/limelog/internal/adapters/db/mongo"
+	"github.com/mechta-market/limelog/internal/adapters/input/gelf"
 	"github.com/mechta-market/limelog/internal/adapters/logger/zap"
 	"github.com/mechta-market/limelog/internal/domain/core"
 	"github.com/mechta-market/limelog/internal/domain/usecases"
@@ -16,7 +17,7 @@ import (
 func TestMain(m *testing.M) {
 	var err error
 
-	viper.SetConfigFile("test_conf.yml")
+	viper.SetConfigFile("conf.yml")
 	_ = viper.ReadInConfig()
 
 	viper.AutomaticEnv()
@@ -31,7 +32,15 @@ func TestMain(m *testing.M) {
 	}
 	defer app.lg.Sync()
 
-	app.db, err = pg.New(app.lg, viper.GetString("pg_dsn"), true)
+	app.db, err = mongo.New(
+		app.lg,
+		viper.GetString("mongo_username"),
+		viper.GetString("mongo_password"),
+		viper.GetString("mongo_host"),
+		viper.GetString("mongo_db_name"),
+		viper.GetString("mongo_replica_set"),
+		false,
+	)
 	if err != nil {
 		app.lg.Fatal(err)
 	}
@@ -47,6 +56,11 @@ func TestMain(m *testing.M) {
 		app.db,
 		app.core,
 	)
+
+	app.inputGelf, err = gelf.NewUDP(app.lg, ":9999", app.ucs)
+	if err != nil {
+		app.lg.Fatal(err)
+	}
 
 	resetDb()
 
