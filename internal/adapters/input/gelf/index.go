@@ -119,6 +119,8 @@ func (o *St) handlePacket(pkt []byte) {
 				}
 
 				delete(o.chunkedMsgs, mid)
+
+				fmt.Println("Chunked gelf-message")
 			}
 		}
 	} else { // not chunked
