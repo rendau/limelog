@@ -44,6 +44,8 @@ func NewUDP(lg interfaces.Logger, addr string) (*St, error) {
 		lg: lg,
 
 		udpAddr: udpAddr,
+
+		chunkedMsgs: map[string]*chunkedMsgSt{},
 	}, nil
 }
 
