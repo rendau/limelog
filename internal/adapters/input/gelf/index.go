@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
+	"os"
 
 	"github.com/mechta-market/limelog/internal/interfaces"
 )
@@ -68,7 +69,7 @@ func (o *St) StartUDP(eChan chan<- error) {
 				return
 			}
 
-			o.lg.Infow("UDP packet", "data", string(cBuf[:n]))
+			// o.lg.Infow("UDP packet", "data", string(cBuf[:n]))
 
 			o.handlePacket(cBuf[:n])
 		}
@@ -160,5 +161,11 @@ func (o *St) handleMsg(msg []byte) {
 		return
 	}
 
-	o.lg.Infow("GELF message", "message", string(msgRaw))
+	// o.lg.Infow("GELF message", "message", string(msgRaw))
+
+	err = ioutil.WriteFile("./out.txt", msgRaw, os.ModePerm)
+	if err != nil {
+		o.lg.Errorw("Fail to WriteFile", err)
+		return
+	}
 }
