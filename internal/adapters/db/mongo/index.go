@@ -55,13 +55,15 @@ func New(
 
 	db := client.Database(dbName)
 
-	return &St{
+	res := &St{
 		debug: debug,
 		lg:    lg,
 
 		Client: client,
 		Db:     db,
-	}, nil
+	}
+
+	return res, nil
 }
 
 func (d *St) handleErr(err error) error {

@@ -63,10 +63,6 @@ func (c *Log) Create(ctx context.Context, obj map[string]interface{}) error {
 	return c.r.db.LogCreate(ctx, obj)
 }
 
-func (c *Log) List(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, error) {
-	if pars == nil {
-		pars = &entities.LogListParsSt{}
-	}
-
+func (c *Log) List(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, int64, error) {
 	return c.r.db.LogList(ctx, pars)
 }

@@ -13,5 +13,5 @@ type Db interface {
 
 	// log
 	LogCreate(ctx context.Context, obj map[string]interface{}) error
-	LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, error)
+	LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, int64, error)
 }
