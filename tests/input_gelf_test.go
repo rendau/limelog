@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 func TestInputGelf(t *testing.T) {
 	prepareDbForNewTest()
 
-	ctx := context.Background()
+	ctx := ctxWithSes(t, nil)
 
 	app.inputGelf.HandleMsg([]byte(`
 	  {
@@ -41,6 +40,11 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "tag1", logs[0][cns.SystemFieldPrefix+"tag"])
 	require.Equal(t, "m1", logs[0][cns.SystemFieldPrefix+"mid"])
 
+	tags, err := app.ucs.TagList(ctx)
+	require.Nil(t, err)
+	require.Len(t, tags, 1)
+	require.Equal(t, "tag1", tags[0])
+
 	app.inputGelf.HandleMsg([]byte(`
 	  {
 		"short_message": "{\"level\":\"warn\",\"msg\":\"Hello warn!\"}",
@@ -63,11 +67,16 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "tag1", logs[0][cns.SystemFieldPrefix+"tag"])
 	require.Equal(t, "m2", logs[0][cns.SystemFieldPrefix+"mid"])
 
+	tags, err = app.ucs.TagList(ctx)
+	require.Nil(t, err)
+	require.Len(t, tags, 1)
+	require.Equal(t, "tag1", tags[0])
+
 	app.inputGelf.HandleMsg([]byte(`
 	  {
 		"short_message": "{\"level\":\"error\",\"msg\":\"Hello error!\"}",
 		"timestamp": 1633841086,
-		"_tag": "tag1",
+		"_tag": "tag2",
 		"_mid": "m3"
 	  }
 	`))
@@ -82,8 +91,22 @@ func TestInputGelf(t *testing.T) {
 	require.Len(t, logs, 3)
 	require.Equal(t, "Hello error!", logs[0][cns.MessageFieldName])
 	require.Equal(t, "error", logs[0]["level"])
-	require.Equal(t, "tag1", logs[0][cns.SystemFieldPrefix+"tag"])
+	require.Equal(t, "tag2", logs[0][cns.SystemFieldPrefix+"tag"])
 	require.Equal(t, "m3", logs[0][cns.SystemFieldPrefix+"mid"])
+
+	tags, err = app.ucs.TagList(ctx)
+	require.Nil(t, err)
+	require.Len(t, tags, 2)
+	require.Equal(t, "tag1", tags[0])
+	require.Equal(t, "tag2", tags[1])
+
+	err = app.ucs.TagRemove(ctx, "tag1")
+	require.Nil(t, err)
+
+	tags, err = app.ucs.TagList(ctx)
+	require.Nil(t, err)
+	require.Len(t, tags, 1)
+	require.Equal(t, "tag2", tags[0])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
 		PaginationParams: entities.PaginationParams{PageSize: 100},

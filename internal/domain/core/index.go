@@ -19,6 +19,7 @@ type St struct {
 	Session *Session
 	Profile *Profile
 	Log     *Log
+	Tag     *Tag
 }
 
 func New(
@@ -40,6 +41,7 @@ func New(
 	c.Session = NewSession(c)
 	c.Profile = NewProfile(c)
 	c.Log = NewLog(c)
+	c.Tag = NewTag(c)
 
 	return c
 }

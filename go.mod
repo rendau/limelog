@@ -14,6 +14,7 @@ require (
 )
 
 require (
+	github.com/brianvoe/gofakeit/v6 v6.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect

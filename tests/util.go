@@ -3,6 +3,8 @@ package tests
 import (
 	"context"
 	"testing"
+
+	"github.com/mechta-market/limelog/internal/domain/entities"
 )
 
 func resetDb() {
@@ -14,20 +16,23 @@ func resetDb() {
 	if err != nil {
 		app.lg.Fatal(err)
 	}
+
+	err = app.db.Db.Collection("tag").Drop(ctx)
+	if err != nil {
+		app.lg.Fatal(err)
+	}
 }
 
 func prepareDbForNewTest() {
 	resetDb()
 }
 
-func ctxWithSes(t *testing.T, ctx context.Context, usrId int64) context.Context {
-	// if ctx == nil {
-	// 	ctx = context.Background()
-	// }
-	//
-	// token, err := app.core.Usr.GetOrCreateToken(ctx, usrId)
-	// require.Nil(t, err)
-	//
-	// return app.ucs.SessionSetToContextByToken(ctx, token)
-	return context.Background()
+func ctxWithSes(t *testing.T, ctx context.Context) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	return app.ucs.SessionSetToContext(ctx, &entities.Session{
+		Authed: true,
+	})
 }

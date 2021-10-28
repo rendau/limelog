@@ -60,6 +60,15 @@ func (c *Log) HandleMsg(ctx context.Context, msg map[string]interface{}) {
 }
 
 func (c *Log) Create(ctx context.Context, obj map[string]interface{}) error {
+	// set tag
+	if v, ok := obj[cns.MessageTagName]; ok {
+		if tag, ok := v.(string); ok {
+			if tag != "" {
+				_ = c.r.Tag.Set(ctx, tag)
+			}
+		}
+	}
+
 	return c.r.db.LogCreate(ctx, obj)
 }
 

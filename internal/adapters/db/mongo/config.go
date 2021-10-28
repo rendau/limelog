@@ -22,7 +22,9 @@ func (d *St) ConfigSet(ctx context.Context, config *entities.ConfigSt) error {
 		"$set": config,
 	}, &options.FindOneAndUpdateOptions{Upsert: &upsert})
 	if err = res.Err(); err != nil {
-		return d.handleErr(err)
+		if err != mongo.ErrNoDocuments {
+			return d.handleErr(err)
+		}
 	}
 
 	return nil
