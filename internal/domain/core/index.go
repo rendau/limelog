@@ -7,32 +7,38 @@ import (
 )
 
 type St struct {
-	lg      interfaces.Logger
-	db      interfaces.Db
-	testing bool
+	lg       interfaces.Logger
+	db       interfaces.Db
+	testing  bool
+	authPsw  string
+	sesToken string
 
 	wg sync.WaitGroup
 
-	Config *Config
-
-	Notification *Notification
-	Log          *Log
+	Config  *Config
+	Session *Session
+	Auth    *Auth
+	Log     *Log
 }
 
 func New(
 	lg interfaces.Logger,
 	db interfaces.Db,
 	testing bool,
+	authPsw string,
+	sesToken string,
 ) *St {
 	c := &St{
-		lg:      lg,
-		db:      db,
-		testing: testing,
+		lg:       lg,
+		db:       db,
+		testing:  testing,
+		authPsw:  authPsw,
+		sesToken: sesToken,
 	}
 
 	c.Config = NewConfig(c)
-
-	c.Notification = NewNotification(c)
+	c.Session = NewSession(c)
+	c.Auth = NewAuth(c)
 	c.Log = NewLog(c)
 
 	return c

@@ -55,6 +55,8 @@ func Execute() {
 		app.lg,
 		app.db,
 		false,
+		viper.GetString("AUTH_PASSWORD"),
+		viper.GetString("SESSION_TOKEN"),
 	)
 
 	app.ucs = usecases.New(

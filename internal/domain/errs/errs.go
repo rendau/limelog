@@ -13,4 +13,6 @@ const (
 	PermissionDenied  = Err("permission_denied")
 	ObjectNotFound    = Err("object_not_found")
 	IncorrectPageSize = Err("incorrect_page_size")
+
+	WrongPassword = Err("wrong_password")
 )

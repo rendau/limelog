@@ -6,6 +6,8 @@
 DEBUG: true
 LOG_LEVEL: "debug"
 HTTP_LISTEN: ":80"
+AUTH_PASSWORD: "password"
+SESSION_TOKEN: "token"
 MONGO_HOST: host # default "localhost:27017"
 MONGO_USERNAME: username
 MONGO_PASSWORD: password

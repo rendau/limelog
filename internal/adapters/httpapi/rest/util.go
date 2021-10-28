@@ -77,15 +77,14 @@ func (a *St) uLogErrorRequest(r *http.Request, err interface{}, msg string) {
 }
 
 func (a *St) uGetRequestContext(r *http.Request) context.Context {
-	// token := r.Header.Get("Authorization")
-	// if token == "" { // try from query parameter
-	// 	token = r.URL.Query().Get("auth_token")
-	// }
+	token := r.Header.Get("Authorization")
+	if token == "" { // try from query parameter
+		token = r.URL.Query().Get("auth_token")
+	}
 
 	ctx := context.Background()
 
-	// return a.ucs.SessionSetToContextByToken(ctx, token)
-	return ctx
+	return a.ucs.SessionSetToContextByToken(ctx, token)
 }
 
 func (a *St) uExtractPaginationPars(dst *entities.PaginationParams, pars url.Values) {

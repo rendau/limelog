@@ -58,6 +58,26 @@ paths:
       - token: []
       tags:
       - log
+  /profile/auth:
+    post:
+      operationId: hProfileAuth
+      parameters:
+      - in: body
+        name: Body
+        schema:
+          properties:
+            password:
+              type: string
+              x-go-name: Password
+          type: object
+      responses:
+        "200":
+          $ref: '#/responses/profileAuthRep'
+        "400":
+          $ref: '#/responses/errRep'
+      summary: Авторизация.
+      tags:
+      - profile
 produces:
 - application/json
 responses:
@@ -88,6 +108,14 @@ responses:
           format: int64
           type: integer
           x-go-name: TotalCount
+      type: object
+  profileAuthRep:
+    description: ""
+    schema:
+      properties:
+        token:
+          type: string
+          x-go-name: Token
       type: object
 schemes:
 - https
