@@ -14,7 +14,7 @@ func RequirePageSize(pars entities.PaginationParams, allowedPageSize int64) erro
 		allowedPageSize = cns.MaxPageSize
 	}
 
-	if pars.Limit == 0 || pars.Limit > allowedPageSize {
+	if pars.PageSize == 0 || pars.PageSize > allowedPageSize {
 		return errs.IncorrectPageSize
 	}
 

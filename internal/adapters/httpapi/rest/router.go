@@ -49,8 +49,8 @@ func (a *St) router() http.Handler {
 	})
 	r.PathPrefix("/doc/").Handler(http.StripPrefix("/doc/", http.FileServer(http.Dir("./doc/"))))
 
-	// // config
-	// r.HandleFunc("/config", a.hConfigUpdate).Methods("PUT")
+	// log
+	r.HandleFunc("/log/list", a.hLogList).Methods("POST")
 
 	return a.middleware(r)
 }

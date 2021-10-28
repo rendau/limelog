@@ -27,7 +27,7 @@ func TestInputGelf(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	logs, cnt, err := app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Limit: 100},
+		PaginationParams: entities.PaginationParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 1, cnt)
@@ -53,7 +53,7 @@ func TestInputGelf(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Limit: 100},
+		PaginationParams: entities.PaginationParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 2, cnt)
@@ -75,7 +75,7 @@ func TestInputGelf(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Limit: 100},
+		PaginationParams: entities.PaginationParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 3, cnt)
@@ -86,7 +86,7 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m3", logs[0][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Limit: 100},
+		PaginationParams: entities.PaginationParams{PageSize: 100},
 		FilterObj: map[string]interface{}{
 			"level": "warn",
 		},
@@ -97,7 +97,7 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m2", logs[0][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Limit: 100},
+		PaginationParams: entities.PaginationParams{PageSize: 100},
 		FilterObj: map[string]interface{}{
 			"level": "error",
 		},
@@ -108,7 +108,7 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m3", logs[0][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Limit: 100},
+		PaginationParams: entities.PaginationParams{PageSize: 100},
 		FilterObj: map[string]interface{}{
 			"level": "info",
 		},
@@ -119,7 +119,7 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m1", logs[0][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Limit: 100},
+		PaginationParams: entities.PaginationParams{PageSize: 100},
 		FilterObj: map[string]interface{}{
 			"level": map[string]interface{}{
 				"$in": []string{"error", "warn"},
@@ -133,7 +133,7 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m2", logs[1][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Limit: 2},
+		PaginationParams: entities.PaginationParams{PageSize: 2},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 3, cnt)
@@ -142,11 +142,10 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m2", logs[1][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Offset: 1, Limit: 2},
+		PaginationParams: entities.PaginationParams{Page: 1, PageSize: 2},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 3, cnt)
-	require.Len(t, logs, 2)
-	require.Equal(t, "m2", logs[0][cns.SystemFieldPrefix+"mid"])
-	require.Equal(t, "m1", logs[1][cns.SystemFieldPrefix+"mid"])
+	require.Len(t, logs, 1)
+	require.Equal(t, "m1", logs[0][cns.SystemFieldPrefix+"mid"])
 }

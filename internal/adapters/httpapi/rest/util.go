@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mechta-market/limelog/internal/domain/entities"
 	"github.com/mechta-market/limelog/internal/domain/errs"
 )
 
@@ -87,31 +88,24 @@ func (a *St) uGetRequestContext(r *http.Request) context.Context {
 	return ctx
 }
 
-func (a *St) uExtractPaginationPars(pars url.Values) (offset int64, limit int64, page int64) {
+func (a *St) uExtractPaginationPars(dst *entities.PaginationParams, pars url.Values) {
 	var err error
 
 	qPar := pars.Get("page_size")
 	if qPar != "" {
-		limit, err = strconv.ParseInt(qPar, 10, 64)
+		dst.PageSize, err = strconv.ParseInt(qPar, 10, 64)
 		if err != nil {
-			limit = 0
+			dst.PageSize = 0
 		}
 	}
 
 	qPar = pars.Get("page")
 	if qPar != "" {
-		page, err = strconv.ParseInt(qPar, 10, 64)
+		dst.Page, err = strconv.ParseInt(qPar, 10, 64)
 		if err != nil {
-			page = 0
+			dst.Page = 0
 		}
 	}
-	if page == 0 {
-		page = 1
-	}
-
-	offset = (page - 1) * limit
-
-	return offset, limit, page
 }
 
 func (a *St) uQpParseBool(values url.Values, key string) *bool {

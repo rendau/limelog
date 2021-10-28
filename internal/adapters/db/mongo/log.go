@@ -36,17 +36,19 @@ func (d *St) LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[s
 
 	var totalCnt int64
 
-	if pars.Limit > 0 {
+	if pars.PageSize > 0 {
 		totalCnt, err = collection.CountDocuments(ctx, filter)
 		if err != nil {
 			return nil, 0, d.handleErr(err)
 		}
 	}
 
+	skip := pars.Page * pars.PageSize
+
 	cur, err := collection.Find(ctx, filter, &options.FindOptions{
 		Sort:  bson.M{"sf_ts": -1},
-		Skip:  &pars.Offset,
-		Limit: &pars.Limit,
+		Skip:  &skip,
+		Limit: &pars.PageSize,
 	})
 	if err != nil {
 		return nil, 0, d.handleErr(err)

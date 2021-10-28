@@ -10,6 +10,23 @@ definitions:
         x-go-name: ErrorCode
     type: object
     x-go-package: github.com/mechta-market/limelog/internal/adapters/httpapi/rest
+  LogListParsSt:
+    properties:
+      filter_obj:
+        additionalProperties:
+          type: object
+        type: object
+        x-go-name: FilterObj
+      page:
+        format: int64
+        type: integer
+        x-go-name: Page
+      page_size:
+        format: int64
+        type: integer
+        x-go-name: PageSize
+    type: object
+    x-go-package: github.com/mechta-market/limelog/internal/domain/entities
 host: api.zeon.mechta.market
 info:
   description: |-
@@ -23,7 +40,24 @@ info:
     </details>
   title: LimeLog API.
   version: 1.0.0
-paths: {}
+paths:
+  /log/list:
+    post:
+      operationId: hLogList
+      parameters:
+      - in: body
+        name: Body
+        schema:
+          $ref: '#/definitions/LogListParsSt'
+      responses:
+        "200":
+          $ref: '#/responses/logListRep'
+        "400":
+          $ref: '#/responses/errRep'
+      security:
+      - token: []
+      tags:
+      - log
 produces:
 - application/json
 responses:
@@ -31,6 +65,30 @@ responses:
     description: ""
     schema:
       $ref: '#/definitions/ErrRepSt'
+  logListRep:
+    description: ""
+    schema:
+      properties:
+        page:
+          format: int64
+          type: integer
+          x-go-name: Page
+        page_size:
+          format: int64
+          type: integer
+          x-go-name: PageSize
+        results:
+          items:
+            additionalProperties:
+              type: object
+            type: object
+          type: array
+          x-go-name: Results
+        total_count:
+          format: int64
+          type: integer
+          x-go-name: TotalCount
+      type: object
 schemes:
 - https
 - http
