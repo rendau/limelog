@@ -50,6 +50,7 @@ func (a *St) router() http.Handler {
 	r.PathPrefix("/doc/").Handler(http.StripPrefix("/doc/", http.FileServer(http.Dir("./doc/"))))
 
 	// profile
+	r.HandleFunc("/profile", a.hProfileGet).Methods("GET")
 	r.HandleFunc("/profile/auth", a.hProfileAuth).Methods("POST")
 
 	// log

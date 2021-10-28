@@ -14,7 +14,15 @@ func (u *St) LogHandleMsg(ctx context.Context,
 
 func (u *St) LogList(ctx context.Context,
 	pars *entities.LogListParsSt) ([]map[string]interface{}, int64, error) {
-	if err := util.RequirePageSize(pars.PaginationParams, 0); err != nil {
+	var err error
+
+	ses := u.SessionGetFromContext(ctx)
+
+	if err = u.SessionRequireAuth(ses); err != nil {
+		return nil, 0, err
+	}
+
+	if err = util.RequirePageSize(pars.PaginationParams, 0); err != nil {
 		return nil, 0, err
 	}
 

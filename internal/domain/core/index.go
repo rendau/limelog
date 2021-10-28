@@ -17,7 +17,7 @@ type St struct {
 
 	Config  *Config
 	Session *Session
-	Auth    *Auth
+	Profile *Profile
 	Log     *Log
 }
 
@@ -38,7 +38,7 @@ func New(
 
 	c.Config = NewConfig(c)
 	c.Session = NewSession(c)
-	c.Auth = NewAuth(c)
+	c.Profile = NewProfile(c)
 	c.Log = NewLog(c)
 
 	return c

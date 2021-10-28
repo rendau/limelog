@@ -8,6 +8,14 @@ import (
 
 func (u *St) ConfigSet(ctx context.Context,
 	config *entities.ConfigSt) error {
+	var err error
+
+	ses := u.SessionGetFromContext(ctx)
+
+	if err = u.SessionRequireAuth(ses); err != nil {
+		return err
+	}
+
 	return u.cr.Config.Set(ctx, config)
 }
 

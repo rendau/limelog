@@ -27,6 +27,9 @@ definitions:
         x-go-name: PageSize
     type: object
     x-go-package: github.com/mechta-market/limelog/internal/domain/entities
+  ProfileSt:
+    type: object
+    x-go-package: github.com/mechta-market/limelog/internal/domain/entities
 host: api.zeon.mechta.market
 info:
   description: |-
@@ -58,6 +61,18 @@ paths:
       - token: []
       tags:
       - log
+  /profile:
+    get:
+      operationId: hProfileGet
+      responses:
+        "200":
+          $ref: '#/responses/profileGetRep'
+        "400":
+          $ref: '#/responses/errRep'
+      security:
+      - token: []
+      tags:
+      - profile
   /profile/auth:
     post:
       operationId: hProfileAuth
@@ -117,6 +132,10 @@ responses:
           type: string
           x-go-name: Token
       type: object
+  profileGetRep:
+    description: ""
+    schema:
+      $ref: '#/definitions/ProfileSt'
 schemes:
 - https
 - http

@@ -49,6 +49,8 @@ func TestMain(m *testing.M) {
 		app.lg,
 		app.db,
 		true,
+		"password",
+		"token",
 	)
 
 	app.ucs = usecases.New(
