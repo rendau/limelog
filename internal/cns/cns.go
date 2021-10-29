@@ -7,9 +7,9 @@ const (
 
 	SystemFieldPrefix  = "sf_"
 	SfTsFieldName      = SystemFieldPrefix + "ts"
+	SfTagFieldName     = SystemFieldPrefix + "tag"
 	SfMessageFieldName = SystemFieldPrefix + "message"
 	MessageFieldName   = "message"
-	MessageTagName     = SystemFieldPrefix + "tag"
 
 	MaxPageSize = 1000
 )

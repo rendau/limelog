@@ -33,6 +33,10 @@ func (a *St) hLogList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	qPars := r.URL.Query()
+
+	a.uExtractPaginationPars(&pars.PaginationParams, qPars)
+
 	paginated := pars.PageSize > 0
 
 	result, tCount, err := a.ucs.LogList(a.uGetRequestContext(r), pars)
