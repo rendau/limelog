@@ -53,6 +53,10 @@ func (a *St) router() http.Handler {
 	r.HandleFunc("/profile", a.hProfileGet).Methods("GET")
 	r.HandleFunc("/profile/auth", a.hProfileAuth).Methods("POST")
 
+	// tag
+	r.HandleFunc("/tag", a.hTagList).Methods("GET")
+	r.HandleFunc("/tag", a.hTagRemove).Methods("DELETE")
+
 	// log
 	r.HandleFunc("/log/list", a.hLogList).Methods("POST")
 

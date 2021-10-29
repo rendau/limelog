@@ -93,6 +93,34 @@ paths:
       summary: Авторизация.
       tags:
       - profile
+  /tag:
+    delete:
+      operationId: hTagRemove
+      parameters:
+      - in: query
+        name: value
+        type: string
+        x-go-name: Value
+      responses:
+        "200":
+          description: ""
+        "400":
+          $ref: '#/responses/errRep'
+      security:
+      - token: []
+      tags:
+      - tag
+    get:
+      operationId: hTagList
+      responses:
+        "200":
+          $ref: '#/responses/tagListRep'
+        "400":
+          $ref: '#/responses/errRep'
+      security:
+      - token: []
+      tags:
+      - tag
 produces:
 - application/json
 responses:
@@ -136,6 +164,12 @@ responses:
     description: ""
     schema:
       $ref: '#/definitions/ProfileSt'
+  tagListRep:
+    description: ""
+    schema:
+      items:
+        type: string
+      type: array
 schemes:
 - https
 - http
