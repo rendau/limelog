@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"net"
 	"testing"
 	"time"
 
@@ -14,7 +15,11 @@ func TestInputGelf(t *testing.T) {
 
 	ctx := ctxWithSes(t, nil)
 
-	app.inputGelf.HandleMsg([]byte(`
+	udpConn, err := net.Dial("udp", app.inputGelf.GetListenAddress())
+	require.Nil(t, err)
+	defer udpConn.Close()
+
+	_, err = udpConn.Write([]byte(`
 	  {
 		"short_message": "{\"level\":\"info\",\"msg\":\"Hello world!\",\"arg1\":\"arg1_value\",\"arg2\":7}",
 		"timestamp": 1633841084,
@@ -22,8 +27,9 @@ func TestInputGelf(t *testing.T) {
 		"_mid": "m1"
 	  }
 	`))
+	require.Nil(t, err)
 
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(time.Second)
 
 	logs, cnt, err := app.ucs.LogList(ctx, &entities.LogListParsSt{
 		PaginationParams: entities.PaginationParams{PageSize: 100},
@@ -45,7 +51,7 @@ func TestInputGelf(t *testing.T) {
 	require.Len(t, tags, 1)
 	require.Equal(t, "tag1", tags[0])
 
-	app.inputGelf.HandleMsg([]byte(`
+	_, err = udpConn.Write([]byte(`
 	  {
 		"short_message": "{\"level\":\"warn\",\"msg\":\"Hello warn!\"}",
 		"timestamp": 1633841085,
@@ -53,6 +59,7 @@ func TestInputGelf(t *testing.T) {
 		"_mid": "m2"
 	  }
 	`))
+	require.Nil(t, err)
 
 	time.Sleep(50 * time.Millisecond)
 
@@ -72,7 +79,7 @@ func TestInputGelf(t *testing.T) {
 	require.Len(t, tags, 1)
 	require.Equal(t, "tag1", tags[0])
 
-	app.inputGelf.HandleMsg([]byte(`
+	_, err = udpConn.Write([]byte(`
 	  {
 		"short_message": "{\"level\":\"error\",\"msg\":\"Hello error!\"}",
 		"timestamp": 1633841086,
@@ -80,6 +87,7 @@ func TestInputGelf(t *testing.T) {
 		"_mid": "m3"
 	  }
 	`))
+	require.Nil(t, err)
 
 	time.Sleep(50 * time.Millisecond)
 

@@ -1,25 +1,28 @@
 package tests
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/mechta-market/limelog/internal/cns"
+	"github.com/mechta-market/limelog/internal/domain/core"
 )
 
 func BenchmarkGenerateRandomLogs(b *testing.B) {
 	prepareDbForNewTest()
 
-	ctx := context.Background()
+	doneCh := make(chan bool, core.MsgBufferSize+10)
+
+	app.core.Log.SetTstDoneChan(doneCh)
 
 	for i := 0; i < 10000; i++ {
-		app.ucs.LogHandleMsg(ctx, map[string]interface{}{
+		app.ucs.LogHandleMsg(map[string]interface{}{
 			cns.SfTsFieldName:                    time.Now().Add(-(time.Duration(i) * time.Second)),
 			cns.SfMessageFieldName:               gofakeit.Sentence(12),
 			cns.MessageFieldName:                 gofakeit.Sentence(12),
-			cns.SystemFieldPrefix + "level":      gofakeit.RandomString([]string{"debug", "info", "warn", "error", "fatal"}),
+			"mi":                                 i + 1,
+			"level":                              gofakeit.RandomString([]string{"debug", "info", "warn", "error", "fatal"}),
 			cns.SystemFieldPrefix + "tag":        gofakeit.RandomString([]string{"service-1", "service-2", "service-3", "service-4", "service-5"}),
 			cns.SystemFieldPrefix + "image_name": gofakeit.RandomString([]string{"service_1", "service_2", "service_3", "service_4", "service_5"}),
 			cns.SystemFieldPrefix + "command":    gofakeit.BeerName(),
@@ -32,6 +35,10 @@ func BenchmarkGenerateRandomLogs(b *testing.B) {
 	//
 	// err = json.NewEncoder(file).Encode(data)
 	// require.Nil(b, err)
+
+	for i := 0; i < 10000; i++ {
+		<-doneCh
+	}
 
 	b.Fail()
 }

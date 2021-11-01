@@ -12,7 +12,8 @@ type Db interface {
 	ConfigSet(ctx context.Context, config *entities.ConfigSt) error
 
 	// log
-	LogCreate(ctx context.Context, obj map[string]interface{}) error
+	LogCreate(ctx context.Context, obj interface{}) error
+	LogCreateMany(ctx context.Context, objs []interface{}) error
 	LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, int64, error)
 
 	// tag

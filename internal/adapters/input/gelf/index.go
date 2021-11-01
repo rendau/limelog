@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"compress/gzip"
 	"compress/zlib"
-	"context"
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"math"
 	"net"
+	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mechta-market/limelog/internal/cns"
@@ -19,7 +19,9 @@ import (
 )
 
 const (
-	ChunkSize = 66000
+	chunkSize        = 66000
+	packetBufferSize = 10000
+	workerCount      = 20
 )
 
 var (
@@ -37,27 +39,52 @@ type St struct {
 
 	conn net.Conn
 
-	udpChunkedMsgs map[string]*udpChunkedMsgSt
+	udpChunkedMsgs   map[string]*udpChunkedMsgSt
+	udpChunkedMsgsMu sync.Mutex
 }
 
 func NewUDP(lg interfaces.Logger, addr string, ucs *usecases.St) (*St, error) {
-	udpAddr, err := net.ResolveUDPAddr("udp", addr)
-	if err != nil {
-		lg.Errorw("Fail to ResolveUDPAddr", err)
+	var err error
 
-		return nil, err
-	}
-
-	return &St{
+	res := &St{
 		lg:             lg,
-		udpAddr:        udpAddr,
 		ucs:            ucs,
 		udpChunkedMsgs: map[string]*udpChunkedMsgSt{},
-	}, nil
+	}
+
+	if addr != "" {
+		res.udpAddr, err = net.ResolveUDPAddr("udp", addr)
+		if err != nil {
+			lg.Errorw("Fail to ResolveUDPAddr", err)
+
+			return nil, err
+		}
+	}
+
+	return res, nil
+}
+
+func (o *St) GetListenAddress() string {
+	if o.udpAddr != nil {
+		return o.udpAddr.String()
+	}
+	return ""
 }
 
 func (o *St) StartUDP(eChan chan<- error) {
+	if o.udpAddr == nil {
+		o.lg.Infow("UDP listen address is not specified")
+		return
+	}
+
 	go func() {
+		jobCh := make(chan []byte, packetBufferSize)
+		defer close(jobCh)
+
+		for i := 0; i < workerCount; i++ {
+			go o.handlePacket(jobCh)
+		}
+
 		conn, err := net.ListenUDP("udp", o.udpAddr)
 		if err != nil {
 			o.lg.Errorw("Fail to ListenUDP", err)
@@ -67,7 +94,7 @@ func (o *St) StartUDP(eChan chan<- error) {
 
 		o.lg.Infow("Start gelf-udp", "addr", conn.LocalAddr().String())
 
-		cBuf := make([]byte, ChunkSize)
+		cBuf := make([]byte, chunkSize)
 		var n int
 
 		for {
@@ -78,25 +105,33 @@ func (o *St) StartUDP(eChan chan<- error) {
 				return
 			}
 
-			// o.lg.Infow("UDP packet", "data", string(cBuf[:n]))
+			pkt := make([]byte, n)
+			copy(pkt, cBuf[:n])
 
-			o.HandlePacket(cBuf[:n])
+			// o.lg.Infow("UDP packet", "data", string(pkt))
+
+			jobCh <- pkt
 		}
 	}()
 }
 
-func (o *St) HandlePacket(pkt []byte) {
-	if len(pkt) < 3 {
-		return
-	}
+func (o *St) handlePacket(jobCh <-chan []byte) {
+	h := func(pkt []byte) {
+		pktLen := len(pkt)
 
-	magic := pkt[:2]
+		var msg []byte
 
-	var msg []byte
+		if pktLen > 1 && bytes.Equal(pkt[:2], magicChunked) {
+			if pktLen <= 12 {
+				return
+			}
 
-	if bytes.Equal(magic, magicChunked) {
-		if len(pkt) > 12 {
 			mid, seq, seqCount := string(pkt[2:2+8]), pkt[2+8], pkt[2+8+1]
+
+			payload := pkt[12:]
+			payloadLen := len(payload)
+
+			o.udpChunkedMsgsMu.Lock()
 
 			chunkedMsg, ok := o.udpChunkedMsgs[mid]
 			if !ok {
@@ -107,18 +142,16 @@ func (o *St) HandlePacket(pkt []byte) {
 				o.udpChunkedMsgs[mid] = chunkedMsg
 			}
 
-			payload := pkt[12:]
-
 			// copy payload
-			chunkedMsg.chunks[seq] = make([]byte, len(payload))
+			chunkedMsg.chunks[seq] = make([]byte, payloadLen)
 			copy(chunkedMsg.chunks[seq], payload)
 
-			chunkedMsg.l += len(chunkedMsg.chunks[seq])
+			chunkedMsg.l += payloadLen
 			chunkedMsg.sq--
 
 			if chunkedMsg.sq == 0 {
 				if chunkedMsg.l > 0 {
-					msg = make([]byte, 0, chunkedMsg.l)
+					msg = make([]byte, 0, chunkedMsg.l+10)
 
 					for _, chunk := range chunkedMsg.chunks {
 						msg = append(msg, chunk...)
@@ -127,13 +160,20 @@ func (o *St) HandlePacket(pkt []byte) {
 
 				delete(o.udpChunkedMsgs, mid)
 			}
+
+			o.udpChunkedMsgsMu.Unlock()
+		} else { // not chunked
+			msg = make([]byte, pktLen)
+			copy(msg, pkt)
 		}
-	} else { // not chunked
-		msg = pkt
+
+		if msg != nil {
+			o.HandleMsg(msg)
+		}
 	}
 
-	if msg != nil {
-		o.HandleMsg(msg)
+	for pkt := range jobCh {
+		h(pkt)
 	}
 }
 
@@ -146,28 +186,34 @@ func (o *St) HandleMsg(data []byte) {
 
 	magic := data[:2]
 
-	var msgReader io.Reader
+	var dataRaw []byte
 
 	if bytes.Equal(magic, magicGzip) {
-		msgReader, err = gzip.NewReader(bytes.NewReader(data))
+		reader, err := gzip.NewReader(bytes.NewReader(data))
 		if err != nil {
 			o.lg.Errorw("Fail to gzip.NewReader", err)
 			return
 		}
+
+		dataRaw, err = ioutil.ReadAll(reader)
+		if err != nil {
+			o.lg.Errorw("Fail to ioutil.ReadAll from data", err)
+			return
+		}
 	} else if magic[0] == magicZlib[0] && (int(magic[0])*256+int(magic[1]))%31 == 0 {
-		msgReader, err = zlib.NewReader(bytes.NewReader(data))
+		reader, err := zlib.NewReader(bytes.NewReader(data))
 		if err != nil {
 			o.lg.Errorw("Fail to zlib.NewReader", err)
 			return
 		}
-	} else {
-		msgReader = bytes.NewReader(data)
-	}
 
-	dataRaw, err := ioutil.ReadAll(msgReader)
-	if err != nil {
-		o.lg.Errorw("Fail to ioutil.ReadAll from data", err)
-		return
+		dataRaw, err = ioutil.ReadAll(reader)
+		if err != nil {
+			o.lg.Errorw("Fail to ioutil.ReadAll from data", err)
+			return
+		}
+	} else {
+		dataRaw = data
 	}
 
 	// fmt.Println("GELF message", string(dataRaw))
@@ -198,6 +244,7 @@ func (o *St) HandleMsg(data []byte) {
 		case int64:
 			res[cns.SfTsFieldName] = time.Unix(v, 0)
 		default:
+			o.lg.Warnw("Undefined data-type for timestamp", "data_type", reflect.TypeOf(timestamp))
 			res[cns.SfTsFieldName] = time.Now().UTC()
 		}
 	}
@@ -240,9 +287,11 @@ func (o *St) HandleMsg(data []byte) {
 
 			if v, ok := res["msg"]; ok { // if there "msg" field in json
 				res[cns.MessageFieldName] = v
+			} else if v, ok = res["message"]; ok { // if there "message" field in json
+				res[cns.MessageFieldName] = v
 			}
 		}
 	}
 
-	o.ucs.LogHandleMsg(context.Background(), res)
+	o.ucs.LogHandleMsg(res)
 }

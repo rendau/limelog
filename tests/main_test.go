@@ -59,12 +59,15 @@ func TestMain(m *testing.M) {
 		app.core,
 	)
 
-	app.inputGelf, err = gelf.NewUDP(app.lg, ":9999", app.ucs)
+	app.inputGelf, err = gelf.NewUDP(app.lg, viper.GetString("INPUT_GELF_ADDR"), app.ucs)
 	if err != nil {
 		app.lg.Fatal(err)
 	}
 
 	resetDb()
+
+	gelfInputEChan := make(chan error, 1000)
+	app.inputGelf.StartUDP(gelfInputEChan)
 
 	// Start tests
 	code := m.Run()

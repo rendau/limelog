@@ -7,9 +7,8 @@ import (
 	"github.com/mechta-market/limelog/internal/domain/util"
 )
 
-func (u *St) LogHandleMsg(ctx context.Context,
-	msg map[string]interface{}) {
-	u.cr.Log.HandleMsg(ctx, msg)
+func (u *St) LogHandleMsg(msg map[string]interface{}) {
+	u.cr.Log.HandleMsg(msg)
 }
 
 func (u *St) LogList(ctx context.Context,

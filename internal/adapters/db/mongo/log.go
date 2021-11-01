@@ -8,12 +8,25 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (d *St) LogCreate(ctx context.Context, obj map[string]interface{}) error {
+func (d *St) LogCreate(ctx context.Context, obj interface{}) error {
 	var err error
 
 	collection := d.Db.Collection("log")
 
 	_, err = collection.InsertOne(ctx, obj)
+	if err != nil {
+		return d.handleErr(err)
+	}
+
+	return nil
+}
+
+func (d *St) LogCreateMany(ctx context.Context, objs []interface{}) error {
+	var err error
+
+	collection := d.Db.Collection("log")
+
+	_, err = collection.InsertMany(ctx, objs)
 	if err != nil {
 		return d.handleErr(err)
 	}
