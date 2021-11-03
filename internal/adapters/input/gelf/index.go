@@ -240,12 +240,12 @@ func (o *St) HandleMsg(data []byte) {
 		switch v := timestamp.(type) {
 		case float64:
 			sec, dec := math.Modf(v)
-			res[cns.SfTsFieldName] = time.Unix(int64(sec), int64(dec*(1e9)))
+			res[cns.SfTsFieldName] = time.Unix(int64(sec), int64(dec*(1e9))).UnixMilli()
 		case int64:
-			res[cns.SfTsFieldName] = time.Unix(v, 0)
+			res[cns.SfTsFieldName] = time.Unix(v, 0).UnixMilli()
 		default:
 			o.lg.Warnw("Undefined data-type for timestamp", "data_type", reflect.TypeOf(timestamp))
-			res[cns.SfTsFieldName] = time.Now().UTC()
+			res[cns.SfTsFieldName] = time.Now().UnixMilli()
 		}
 	}
 

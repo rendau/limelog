@@ -10,6 +10,7 @@ const (
 	SfTagFieldName     = SystemFieldPrefix + "tag"
 	SfMessageFieldName = SystemFieldPrefix + "message"
 	MessageFieldName   = "message"
+	LevelFieldName     = "level"
 
 	MaxPageSize = 1000
 )

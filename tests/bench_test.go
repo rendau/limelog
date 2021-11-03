@@ -23,7 +23,7 @@ func BenchmarkUDPLogs(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		data[i], err = json.Marshal(map[string]interface{}{
-			"timestamp":     time.Now().Add(-(time.Duration(i) * time.Second)).Unix(),
+			"timestamp":     time.Now().Add(-(time.Duration(i) * time.Second)).UnixMilli(),
 			"short_message": gofakeit.Sentence(12),
 			"level":         gofakeit.RandomString([]string{"debug", "info", "warn", "error", "fatal"}),
 			"_tag":          gofakeit.RandomString([]string{"service-1", "service-2", "service-3", "service-4", "service-5"}),

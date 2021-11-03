@@ -18,10 +18,9 @@ func BenchmarkGenerateRandomLogs(b *testing.B) {
 
 	for i := 0; i < 10000; i++ {
 		app.ucs.LogHandleMsg(map[string]interface{}{
-			cns.SfTsFieldName:                    time.Now().Add(-(time.Duration(i) * time.Second)),
+			cns.SfTsFieldName:                    time.Now().Add(-(time.Duration(i) * time.Second)).UnixMilli(),
 			cns.SfMessageFieldName:               gofakeit.Sentence(12),
 			cns.MessageFieldName:                 gofakeit.Sentence(12),
-			"mi":                                 i + 1,
 			"level":                              gofakeit.RandomString([]string{"debug", "info", "warn", "error", "fatal"}),
 			cns.SystemFieldPrefix + "tag":        gofakeit.RandomString([]string{"service-1", "service-2", "service-3", "service-4", "service-5"}),
 			cns.SystemFieldPrefix + "image_name": gofakeit.RandomString([]string{"service_1", "service_2", "service_3", "service_4", "service_5"}),

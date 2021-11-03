@@ -20,6 +20,8 @@ type St struct {
 	Profile *Profile
 	Log     *Log
 	Tag     *Tag
+
+	nfProviders []*NotificationProviderSt
 }
 
 func New(
@@ -44,6 +46,10 @@ func New(
 	c.Tag = NewTag(c)
 
 	return c
+}
+
+func (c *St) AddProvider(v *NotificationProviderSt) {
+	c.nfProviders = append(c.nfProviders, v)
 }
 
 func (c *St) WaitJobs() {
