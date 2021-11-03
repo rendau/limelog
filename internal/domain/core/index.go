@@ -15,11 +15,12 @@ type St struct {
 
 	wg sync.WaitGroup
 
-	Config  *Config
-	Session *Session
-	Profile *Profile
-	Log     *Log
-	Tag     *Tag
+	Config       *Config
+	Session      *Session
+	Profile      *Profile
+	Log          *Log
+	Tag          *Tag
+	Notification *Notification
 
 	nfProviders []*NotificationProviderSt
 }
@@ -44,6 +45,7 @@ func New(
 	c.Profile = NewProfile(c)
 	c.Log = NewLog(c)
 	c.Tag = NewTag(c)
+	c.Notification = NewNotification(c)
 
 	return c
 }

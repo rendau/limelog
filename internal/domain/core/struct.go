@@ -5,6 +5,7 @@ import (
 )
 
 type NotificationProviderSt struct {
+	Id       string
 	Levels   []string
 	Provider interfaces.Notification
 }

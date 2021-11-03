@@ -12,7 +12,7 @@ import (
 func BenchmarkGenerateRandomLogs(b *testing.B) {
 	prepareDbForNewTest()
 
-	doneCh := make(chan bool, core.MsgBufferSize+10)
+	doneCh := make(chan bool, core.LogMsgChannelSize+10)
 
 	app.core.Log.SetTstDoneChan(doneCh)
 

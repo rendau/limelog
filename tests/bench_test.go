@@ -39,7 +39,7 @@ func BenchmarkUDPLogs(b *testing.B) {
 
 	b.ResetTimer()
 
-	doneCh := make(chan bool, core.MsgBufferSize+10)
+	doneCh := make(chan bool, core.LogMsgChannelSize+10)
 	app.core.Log.SetTstDoneChan(doneCh)
 
 	wCnt := b.N
@@ -48,7 +48,7 @@ func BenchmarkUDPLogs(b *testing.B) {
 		_, err = udpConn.Write(msg)
 		require.Nil(b, err)
 
-		if i > (core.MsgBufferSize / 2) {
+		if i > (core.LogMsgChannelSize / 2) {
 			<-doneCh
 			wCnt--
 		}
