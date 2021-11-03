@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -79,7 +80,9 @@ func (o *St) Send(msg map[string]interface{}) {
 		tag = ""
 	}
 
-	msgContent := "-------  " + tag + ":\n\n```\n" + string(filteredFieldsRaw) + "\n```"
+	msgContent := "-------  " + tag + ": \n\n```\n" + string(filteredFieldsRaw) + "\n```"
+
+	fmt.Println(msgContent)
 
 	tgMsg := tgbotapi.NewMessage(o.chatId, msgContent)
 	tgMsg.ParseMode = "Markdown"

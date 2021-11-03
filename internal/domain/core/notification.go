@@ -25,9 +25,8 @@ type Notification struct {
 }
 
 type notificationStgItemSt struct {
-	createdAt time.Time
-	msg       map[string]interface{}
-	providers map[string]interfaces.Notification
+	msg      map[string]interface{}
+	provider interfaces.Notification
 }
 
 func NewNotification(r *St) *Notification {
@@ -61,10 +60,17 @@ func (c *Notification) handleNotificationRoutine() {
 			continue
 		}
 
-		sfMsgText, ok := (msg[cns.SfMessageFieldName]).(string)
+		tag, ok := (msg[cns.SfTagFieldName]).(string)
 		if !ok {
-			sfMsgText = ""
+			tag = ""
 		}
+
+		msgText, ok := (msg[cns.MessageFieldName]).(string)
+		if !ok {
+			msgText = ""
+		}
+
+		key := level + "___" + tag + "___" + msgText
 
 		for _, nfPrv := range c.r.nfProviders {
 			levelFound := false
@@ -80,81 +86,71 @@ func (c *Notification) handleNotificationRoutine() {
 				continue
 			}
 
-			c.stgMu.Lock()
+			// concurrent
+			{
+				c.stgMu.Lock()
 
-			if stgItem, ok := c.stg[sfMsgText]; ok {
-				stgItem.providers[nfPrv.Id] = nfPrv.Provider
-			} else {
-				c.stg[sfMsgText] = &notificationStgItemSt{
-					createdAt: time.Now(),
-					msg:       msg,
-					providers: map[string]interfaces.Notification{
-						nfPrv.Id: nfPrv.Provider,
-					},
+				if _, ok = c.stg[nfPrv.Id+"___"+key]; !ok {
+					c.stg[nfPrv.Id+"___"+key] = &notificationStgItemSt{
+						msg:      msg,
+						provider: nfPrv.Provider,
+					}
 				}
-			}
 
-			c.stgMu.Unlock()
+				c.stgMu.Unlock()
+			}
 		}
 	}
 }
 
 func (c *Notification) sendRoutine() {
-	type jobSt struct {
-		prv interfaces.Notification
-		msg map[string]interface{}
+	const chanSize = 1000
+
+	sendIntervalDuration := NfSendSendIntervalDuration
+	if c.r.testing {
+		sendIntervalDuration = time.Second
 	}
 
-	jobChan := make(chan *jobSt, 1000)
-	doneChan := make(chan bool, 1000)
+	jobChan := make(chan *notificationStgItemSt, chanSize)
+	doneChan := make(chan bool, chanSize)
 
 	// start workers
 	for i := 0; i < NfSendWorkerCount; i++ {
 		go func() {
-			for job := range jobChan {
-				job.prv.Send(job.msg)
+			for item := range jobChan {
+				item.provider.Send(item.msg)
 				doneChan <- true
 			}
 		}()
 	}
 
-	var readyItemKeys []string
-	var readyItems []*notificationStgItemSt
+	var stg map[string]*notificationStgItemSt
 
 	for {
-		readyItemKeys = nil
-		readyItems = nil
+		stg = nil
 
-		c.stgMu.Lock()
+		// concurrent
+		{
+			c.stgMu.Lock()
 
-		for k, item := range c.stg {
-			if time.Since(item.createdAt) > NfSendSendIntervalDuration {
-				readyItemKeys = append(readyItemKeys, k)
-				readyItems = append(readyItems, item)
+			if len(c.stg) > 0 {
+				stg = c.stg
+				// renew stg
+				c.stg = map[string]*notificationStgItemSt{}
 			}
+
+			c.stgMu.Unlock()
 		}
 
-		for _, k := range readyItemKeys {
-			delete(c.stg, k)
+		for _, item := range stg {
+			jobChan <- item
 		}
 
-		c.stgMu.Unlock()
-
-		for _, item := range readyItems {
-			for _, prv := range item.providers {
-				jobChan <- &jobSt{
-					prv: prv,
-					msg: item.msg,
-				}
-			}
+		// wait jobs
+		for range stg {
+			<-doneChan
 		}
 
-		for _, item := range readyItems {
-			for range item.providers {
-				<-doneChan
-			}
-		}
-
-		time.Sleep(NfSendSendIntervalDuration)
+		time.Sleep(sendIntervalDuration)
 	}
 }

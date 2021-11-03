@@ -25,6 +25,7 @@ func resetDb() {
 
 func prepareDbForNewTest() {
 	resetDb()
+	app.nf.Clean()
 }
 
 func ctxWithSes(t *testing.T, ctx context.Context) context.Context {

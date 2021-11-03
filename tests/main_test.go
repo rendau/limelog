@@ -8,6 +8,7 @@ import (
 	"github.com/mechta-market/limelog/internal/adapters/db/mongo"
 	"github.com/mechta-market/limelog/internal/adapters/input/gelf"
 	"github.com/mechta-market/limelog/internal/adapters/logger/zap"
+	notificationMock "github.com/mechta-market/limelog/internal/adapters/notification/mock"
 	"github.com/mechta-market/limelog/internal/domain/core"
 	"github.com/mechta-market/limelog/internal/domain/usecases"
 	"github.com/spf13/viper"
@@ -52,6 +53,14 @@ func TestMain(m *testing.M) {
 		"password",
 		"token",
 	)
+
+	app.nf = notificationMock.New(app.lg)
+
+	app.core.AddProvider(&core.NotificationProviderSt{
+		Id:       "tst",
+		Levels:   []string{"fatal", "error", "warn"},
+		Provider: app.nf,
+	})
 
 	app.ucs = usecases.New(
 		app.lg,

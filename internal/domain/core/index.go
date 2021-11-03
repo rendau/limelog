@@ -51,6 +51,10 @@ func New(
 }
 
 func (c *St) AddProvider(v *NotificationProviderSt) {
+	if len(v.Levels) == 0 {
+		v.Levels = append(v.Levels, "fatal", "error", "warn")
+	}
+
 	c.nfProviders = append(c.nfProviders, v)
 }
 

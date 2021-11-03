@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/mechta-market/limelog/internal/adapters/httpapi/rest"
 	"github.com/mechta-market/limelog/internal/adapters/input/gelf"
 	"github.com/mechta-market/limelog/internal/adapters/logger/zap"
+	"github.com/mechta-market/limelog/internal/adapters/notification/telegram"
 	"github.com/mechta-market/limelog/internal/domain/core"
 	"github.com/mechta-market/limelog/internal/domain/usecases"
 	"github.com/mechta-market/limelog/internal/interfaces"
@@ -58,6 +60,24 @@ func Execute() {
 		viper.GetString("AUTH_PASSWORD"),
 		viper.GetString("SESSION_TOKEN"),
 	)
+
+	if viper.GetString("NF_TELEGRAM_BOT_TOKEN") != "" &&
+		viper.GetInt64("NF_TELEGRAM_CHAT_ID") != 0 {
+		prv, err := telegram.New(
+			app.lg,
+			viper.GetString("NF_TELEGRAM_BOT_TOKEN"),
+			viper.GetInt64("NF_TELEGRAM_CHAT_ID"),
+		)
+		if err != nil {
+			app.lg.Fatal(err)
+		}
+
+		app.core.AddProvider(&core.NotificationProviderSt{
+			Id:       "telegram",
+			Levels:   parseLevels(viper.GetString("NF_TELEGRAM_LEVELS")),
+			Provider: prv,
+		})
+	}
 
 	app.ucs = usecases.New(
 		app.lg,
@@ -130,4 +150,17 @@ func loadConf() {
 	_ = viper.ReadInConfig()
 
 	viper.AutomaticEnv()
+}
+
+func parseLevels(src string) []string {
+	result := make([]string, 0)
+
+	for _, lvl := range strings.Split(src, ",") {
+		lvl = strings.ToLower(strings.TrimSpace(lvl))
+		if lvl != "" {
+			result = append(result, lvl)
+		}
+	}
+
+	return result
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/mechta-market/limelog/internal/adapters/db/mongo"
 	"github.com/mechta-market/limelog/internal/adapters/input/gelf"
 	"github.com/mechta-market/limelog/internal/adapters/logger/zap"
+	notificationMock "github.com/mechta-market/limelog/internal/adapters/notification/mock"
 	"github.com/mechta-market/limelog/internal/domain/core"
 	"github.com/mechta-market/limelog/internal/domain/usecases"
 )
@@ -13,6 +14,7 @@ var (
 		lg        *zap.St
 		db        *mongo.St
 		core      *core.St
+		nf        *notificationMock.St
 		ucs       *usecases.St
 		inputGelf *gelf.St
 	}{}

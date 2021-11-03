@@ -79,6 +79,10 @@ func TestInputGelf(t *testing.T) {
 	require.Len(t, tags, 1)
 	require.Equal(t, "tag1", tags[0])
 
+	nfs := app.nf.PullAll()
+	require.Len(t, nfs, 1)
+	require.Equal(t, "m2", nfs[0][cns.SystemFieldPrefix+"mid"])
+
 	_, err = udpConn.Write([]byte(`
 	  {
 		"short_message": "{\"level\":\"error\",\"msg\":\"Hello error!\"}",
@@ -107,6 +111,10 @@ func TestInputGelf(t *testing.T) {
 	require.Len(t, tags, 2)
 	require.Equal(t, "tag1", tags[0])
 	require.Equal(t, "tag2", tags[1])
+
+	nfs = app.nf.PullAll()
+	require.Len(t, nfs, 1)
+	require.Equal(t, "m3", nfs[0][cns.SystemFieldPrefix+"mid"])
 
 	err = app.ucs.TagRemove(ctx, "tag1")
 	require.Nil(t, err)
@@ -179,4 +187,53 @@ func TestInputGelf(t *testing.T) {
 	require.EqualValues(t, 3, cnt)
 	require.Len(t, logs, 1)
 	require.Equal(t, "m1", logs[0][cns.SystemFieldPrefix+"mid"])
+}
+
+func TestNotificationThrottling(t *testing.T) {
+	prepareDbForNewTest()
+
+	ctx := ctxWithSes(t, nil)
+
+	udpConn, err := net.Dial("udp", app.inputGelf.GetListenAddress())
+	require.Nil(t, err)
+	defer udpConn.Close()
+
+	_, err = udpConn.Write([]byte(`
+	  {
+		"short_message": "{\"level\":\"warn\",\"msg\":\"Hello warn!\", \"xxx\":1}",
+		"timestamp": 1633841001,
+		"_tag": "tag1"
+	  }
+	`))
+	require.Nil(t, err)
+
+	_, err = udpConn.Write([]byte(`
+	  {
+		"short_message": "{\"level\":\"warn\",\"msg\":\"Hello warn!\", \"xxx\":2}",
+		"timestamp": 1633841002,
+		"_tag": "tag1"
+	  }
+	`))
+	require.Nil(t, err)
+
+	_, err = udpConn.Write([]byte(`
+	  {
+		"short_message": "{\"level\":\"warn\",\"msg\":\"Hello warn!\", \"xxx\":3}",
+		"timestamp": 1633841003,
+		"_tag": "tag1"
+	  }
+	`))
+	require.Nil(t, err)
+
+	time.Sleep(2 * time.Second)
+
+	_, cnt, err := app.ucs.LogList(ctx, &entities.LogListParsSt{
+		PaginationParams: entities.PaginationParams{PageSize: 100},
+	})
+	require.Nil(t, err)
+	require.EqualValues(t, 3, cnt)
+
+	nfs := app.nf.PullAll()
+	require.Len(t, nfs, 1)
+	require.Equal(t, "Hello warn!", nfs[0]["msg"])
 }
