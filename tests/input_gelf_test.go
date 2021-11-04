@@ -61,7 +61,7 @@ func TestInputGelf(t *testing.T) {
 	`))
 	require.Nil(t, err)
 
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(2 * time.Second)
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
 		PaginationParams: entities.PaginationParams{PageSize: 100},
@@ -93,7 +93,7 @@ func TestInputGelf(t *testing.T) {
 	`))
 	require.Nil(t, err)
 
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(2 * time.Second)
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
 		PaginationParams: entities.PaginationParams{PageSize: 100},

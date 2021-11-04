@@ -42,11 +42,11 @@ func Execute() {
 
 	app.db, err = mongo.New(
 		app.lg,
-		viper.GetString("mongo_username"),
-		viper.GetString("mongo_password"),
-		viper.GetString("mongo_host"),
-		viper.GetString("mongo_db_name"),
-		viper.GetString("mongo_replica_set"),
+		viper.GetString("MONGO_USERNAME"),
+		viper.GetString("MONGO_PASSWORD"),
+		viper.GetString("MONGO_HOST"),
+		viper.GetString("MONGO_DB_NAME"),
+		viper.GetString("MONGO_REPLICA_SET"),
 		debug,
 	)
 	if err != nil {
@@ -140,6 +140,7 @@ func loadConf() {
 	viper.SetDefault("DEBUG", "false")
 	viper.SetDefault("HTTP_LISTEN", ":80")
 	viper.SetDefault("LOG_LEVEL", "debug")
+	viper.SetDefault("INPUT_GELF_ADDR", ":9234")
 	viper.SetDefault("MONGO_HOST", "localhost:27017")
 
 	confFilePath := os.Getenv("CONF_PATH")
