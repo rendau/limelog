@@ -9,23 +9,25 @@ import (
 func (a *St) middleware(h http.Handler) http.Handler {
 	h = a.mwNoCache(h)
 
-	h = cors.New(cors.Options{
-		AllowOriginFunc: func(origin string) bool { return true },
-		AllowedMethods: []string{
-			http.MethodGet,
-			http.MethodHead,
-			http.MethodPost,
-			http.MethodPut,
-			http.MethodPatch,
-			http.MethodDelete,
-			http.MethodConnect,
-			http.MethodOptions,
-			http.MethodTrace,
-		},
-		AllowedHeaders:   []string{"*"},
-		AllowCredentials: true,
-		MaxAge:           604800,
-	}).Handler(h)
+	if a.debug {
+		h = cors.New(cors.Options{
+			AllowOriginFunc: func(origin string) bool { return true },
+			AllowedMethods: []string{
+				http.MethodGet,
+				http.MethodHead,
+				http.MethodPost,
+				http.MethodPut,
+				http.MethodPatch,
+				http.MethodDelete,
+				http.MethodConnect,
+				http.MethodOptions,
+				http.MethodTrace,
+			},
+			AllowedHeaders:   []string{"*"},
+			AllowCredentials: true,
+			MaxAge:           604800,
+		}).Handler(h)
+	}
 
 	h = a.mwRecovery(h)
 
