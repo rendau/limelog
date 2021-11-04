@@ -46,6 +46,10 @@ func (o *St) Send(msg map[string]interface{}) {
 	filteredFields := map[string]interface{}{}
 
 	for k, v := range msg {
+		if k == "msg" {
+			continue
+		}
+
 		if strings.HasPrefix(k, cns.SystemFieldPrefix) {
 			if k == cns.SfTsFieldName {
 				switch val := v.(type) {
