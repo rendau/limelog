@@ -86,6 +86,7 @@ func Execute() {
 	)
 
 	app.restApi = rest.New(
+		debug,
 		app.lg,
 		viper.GetString("HTTP_LISTEN"),
 		app.ucs,

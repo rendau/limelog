@@ -10,20 +10,23 @@ import (
 )
 
 type St struct {
-	lg  interfaces.Logger
-	ucs *usecases.St
+	debug bool
+	lg    interfaces.Logger
+	ucs   *usecases.St
 
 	server *http.Server
 }
 
 func New(
+	debug bool,
 	lg interfaces.Logger,
 	listen string,
 	ucs *usecases.St,
 ) *St {
 	api := &St{
-		lg:  lg,
-		ucs: ucs,
+		debug: debug,
+		lg:    lg,
+		ucs:   ucs,
 	}
 
 	api.server = &http.Server{
