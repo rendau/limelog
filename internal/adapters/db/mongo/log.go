@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 
+	"github.com/mechta-market/limelog/internal/cns"
 	"github.com/mechta-market/limelog/internal/domain/entities"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -85,4 +86,27 @@ func (d *St) LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[s
 	}
 
 	return result, totalCnt, nil
+}
+
+func (d *St) LogRemove(ctx context.Context, pars *entities.LogRemoveParsSt) error {
+	collection := d.Db.Collection("log")
+
+	filter := bson.M{}
+
+	if pars.TsLt != nil {
+		filter[cns.SfTsFieldName] = bson.M{
+			"$lte": pars.TsLt.UnixMilli(),
+		}
+	}
+
+	if len(filter) == 0 {
+		return nil
+	}
+
+	_, err := collection.DeleteMany(ctx, filter)
+	if err != nil {
+		return d.handleErr(err)
+	}
+
+	return nil
 }

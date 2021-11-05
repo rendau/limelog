@@ -7,11 +7,12 @@ import (
 )
 
 type St struct {
-	lg       interfaces.Logger
-	db       interfaces.Db
-	testing  bool
-	authPsw  string
-	sesToken string
+	lg                interfaces.Logger
+	db                interfaces.Db
+	testing           bool
+	authPsw           string
+	sesToken          string
+	logLivePeriodDays int
 
 	wg sync.WaitGroup
 
@@ -21,6 +22,7 @@ type St struct {
 	Log          *Log
 	Tag          *Tag
 	Notification *Notification
+	Jobs         *Jobs
 
 	nfProviders []*NotificationProviderSt
 }
@@ -31,13 +33,15 @@ func New(
 	testing bool,
 	authPsw string,
 	sesToken string,
+	logLivePeriodDays int,
 ) *St {
 	c := &St{
-		lg:       lg,
-		db:       db,
-		testing:  testing,
-		authPsw:  authPsw,
-		sesToken: sesToken,
+		lg:                lg,
+		db:                db,
+		testing:           testing,
+		authPsw:           authPsw,
+		sesToken:          sesToken,
+		logLivePeriodDays: logLivePeriodDays,
 	}
 
 	c.Config = NewConfig(c)
@@ -46,6 +50,7 @@ func New(
 	c.Log = NewLog(c)
 	c.Tag = NewTag(c)
 	c.Notification = NewNotification(c)
+	c.Jobs = NewJobs(c)
 
 	return c
 }

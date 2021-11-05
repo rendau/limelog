@@ -110,3 +110,7 @@ func (c *Log) Create(ctx context.Context, obj map[string]interface{}) error {
 func (c *Log) List(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, int64, error) {
 	return c.r.db.LogList(ctx, pars)
 }
+
+func (c *Log) Remove(ctx context.Context, pars *entities.LogRemoveParsSt) error {
+	return c.r.db.LogRemove(ctx, pars)
+}

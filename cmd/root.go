@@ -59,6 +59,7 @@ func Execute() {
 		false,
 		viper.GetString("AUTH_PASSWORD"),
 		viper.GetString("SESSION_TOKEN"),
+		viper.GetInt("LOG_LIVE_PERIOD_DAYS"),
 	)
 
 	if viper.GetString("NF_TELEGRAM_BOT_TOKEN") != "" &&

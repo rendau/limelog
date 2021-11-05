@@ -17,6 +17,7 @@ NF_TELEGRAM_BOT_TOKEN: string # optional
 NF_TELEGRAM_CHAT_ID: 123 # optional
 NF_TELEGRAM_LEVELS: "fatal,error,warn" # optional
 INPUT_GELF_ADDR: ":9234"
+LOG_LIVE_PERIOD_DAYS: 60 # if not set - then log cleaner will be disabled
 ```
 
 <br/>
