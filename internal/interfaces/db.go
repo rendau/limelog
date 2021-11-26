@@ -16,6 +16,7 @@ type Db interface {
 	LogCreateMany(ctx context.Context, objs []interface{}) error
 	LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, int64, error)
 	LogRemove(ctx context.Context, pars *entities.LogRemoveParsSt) error
+	LogListDistinctTag(ctx context.Context) ([]string, error)
 
 	// tag
 	TagSet(ctx context.Context, value string) error

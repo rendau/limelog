@@ -37,5 +37,6 @@ func (c *Jobs) logCleaner(periodDays int) {
 	for range ticker.C {
 		*pars.TsLt = time.Now().AddDate(0, 0, -periodDays)
 		_ = c.r.Log.Remove(ctx, pars)
+		_ = c.r.Tag.RefreshAll(ctx)
 	}
 }

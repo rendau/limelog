@@ -110,3 +110,26 @@ func (d *St) LogRemove(ctx context.Context, pars *entities.LogRemoveParsSt) erro
 
 	return nil
 }
+
+func (d *St) LogListDistinctTag(ctx context.Context) ([]string, error) {
+	collection := d.Db.Collection("log")
+
+	dbResult, err := collection.Distinct(ctx, cns.SfTagFieldName, bson.D{})
+	if err != nil {
+		return nil, d.handleErr(err)
+	}
+
+	result := make([]string, 0, len(dbResult))
+
+	for _, dbV := range dbResult {
+		strV, ok := dbV.(string)
+		if !ok {
+			d.lg.Warnw("Strange type of value", "value", dbV)
+			continue
+		}
+
+		result = append(result, strV)
+	}
+
+	return result, nil
+}

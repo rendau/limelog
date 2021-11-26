@@ -52,3 +52,42 @@ func (c *Tag) Remove(ctx context.Context, value string) error {
 
 	return nil
 }
+
+func (c *Tag) RefreshAll(ctx context.Context) error {
+	finalList, err := c.r.db.LogListDistinctTag(ctx)
+	if err != nil {
+		return err
+	}
+
+	curList, err := c.List(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, fV := range finalList {
+		err = c.Set(ctx, fV)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, cV := range curList {
+		found := false
+
+		for _, fV := range finalList {
+			if fV == cV {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			err = c.Remove(ctx, cV)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
