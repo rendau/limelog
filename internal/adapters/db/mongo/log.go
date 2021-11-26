@@ -50,6 +50,8 @@ func (d *St) LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[s
 
 	var totalCnt int64
 
+	d.lg.Infow("CountDocuments", "filter", filter)
+
 	if pars.PageSize > 0 {
 		totalCnt, err = collection.CountDocuments(ctx, filter)
 		if err != nil {
