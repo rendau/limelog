@@ -40,6 +40,7 @@ func New(lg interfaces.Logger, botToken string, chatId int64) (*St, error) {
 
 func (o *St) Send(msg map[string]interface{}) {
 	var err error
+	var bytes []byte
 
 	const maxMsgFieldValueSize = 120
 
@@ -63,11 +64,25 @@ func (o *St) Send(msg map[string]interface{}) {
 			} else { // ignore system fields
 				continue
 			}
-		}
-
-		vStr, ok := v.(string)
-		if ok && len(vStr) > maxMsgFieldValueSize {
-			v = vStr[:maxMsgFieldValueSize] + "..."
+		} else {
+			switch val := v.(type) {
+			case string:
+				if len(val) > maxMsgFieldValueSize {
+					v = val[:maxMsgFieldValueSize] + "..."
+				}
+			case int64, int32, int16, int8, int, float64, float32:
+			default: // try to json-marshal for determine length
+				bytes, err = json.MarshalIndent(&v, "", "   ")
+				if err != nil {
+					log.Println("Fail ot marshal json", err)
+					continue
+				}
+				vStr := string(bytes)
+				if len(vStr) > maxMsgFieldValueSize {
+					vStr = vStr[:maxMsgFieldValueSize] + "..."
+					v = vStr
+				}
+			}
 		}
 
 		filteredFields[k] = v
