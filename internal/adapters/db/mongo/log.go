@@ -50,8 +50,6 @@ func (d *St) LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[s
 
 	var totalCnt int64
 
-	d.lg.Infow("CountDocuments", "filter", filter)
-
 	if pars.PageSize > 0 {
 		totalCnt, err = collection.CountDocuments(ctx, filter)
 		if err != nil {
@@ -96,7 +94,6 @@ func (d *St) LogRemove(ctx context.Context, pars *entities.LogRemoveParsSt) erro
 	filter := bson.M{}
 
 	if pars.TsLt != nil {
-		d.lg.Infow("Log remove", "ts_lt", pars.TsLt.String(), "ts_lt__unix_milli", pars.TsLt.UnixMilli())
 		filter[cns.SfTsFieldName] = bson.M{
 			"$lte": pars.TsLt.UnixMilli(),
 		}
