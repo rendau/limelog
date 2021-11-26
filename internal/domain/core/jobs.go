@@ -25,7 +25,7 @@ func NewJobs(r *St) *Jobs {
 }
 
 func (c *Jobs) logCleaner(periodDays int) {
-	ticker := time.NewTicker(time.Hour)
+	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
 
 	ctx := context.Background()
