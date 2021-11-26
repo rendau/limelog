@@ -94,7 +94,7 @@ func (d *St) LogRemove(ctx context.Context, pars *entities.LogRemoveParsSt) erro
 	filter := bson.M{}
 
 	if pars.TsLt != nil {
-		d.lg.Infow("Log remove", "ts_lt", pars.TsLt.String())
+		d.lg.Infow("Log remove", "ts_lt", pars.TsLt.String(), "ts_lt__unix_milli", pars.TsLt.UnixMilli())
 		filter[cns.SfTsFieldName] = bson.M{
 			"$lte": pars.TsLt.UnixMilli(),
 		}
