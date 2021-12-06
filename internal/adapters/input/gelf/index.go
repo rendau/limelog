@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"math"
 	"net"
@@ -72,6 +73,8 @@ func (o *St) GetListenAddress() string {
 }
 
 func (o *St) StartUDP(eChan chan<- error) {
+	var err error
+
 	if o.udpAddr == nil {
 		o.lg.Infow("UDP listen address is not specified")
 		return
@@ -85,23 +88,25 @@ func (o *St) StartUDP(eChan chan<- error) {
 			go o.handlePacket(jobCh)
 		}
 
-		conn, err := net.ListenUDP("udp", o.udpAddr)
+		o.conn, err = net.ListenUDP("udp", o.udpAddr)
 		if err != nil {
 			o.lg.Errorw("Fail to ListenUDP", err)
 			eChan <- err
 			return
 		}
 
-		o.lg.Infow("Start gelf-udp", "addr", conn.LocalAddr().String())
+		o.lg.Infow("Start gelf-udp", "addr", o.conn.LocalAddr().String())
 
 		cBuf := make([]byte, chunkSize)
 		var n int
 
 		for {
-			n, err = conn.Read(cBuf)
+			n, err = o.conn.Read(cBuf)
 			if err != nil {
-				o.lg.Errorw("Fail to Read udp packet", err)
-				eChan <- err
+				if !errors.Is(err, net.ErrClosed) {
+					o.lg.Errorw("Fail to Read udp packet", err)
+					eChan <- err
+				}
 				return
 			}
 
@@ -294,4 +299,8 @@ func (o *St) HandleMsg(data []byte) {
 	}
 
 	o.ucs.LogHandleMsg(res)
+}
+
+func (o *St) Stop() error {
+	return o.conn.Close()
 }

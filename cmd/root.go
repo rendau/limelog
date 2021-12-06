@@ -11,6 +11,7 @@ import (
 	"github.com/mechta-market/limelog/internal/adapters/db/mongo"
 	"github.com/mechta-market/limelog/internal/adapters/httpapi/rest"
 	"github.com/mechta-market/limelog/internal/adapters/input/gelf"
+	"github.com/mechta-market/limelog/internal/adapters/input/htp"
 	"github.com/mechta-market/limelog/internal/adapters/logger/zap"
 	"github.com/mechta-market/limelog/internal/adapters/notification/telegram"
 	"github.com/mechta-market/limelog/internal/domain/core"
@@ -33,6 +34,7 @@ func Execute() {
 		ucs       *usecases.St
 		restApi   *rest.St
 		inputGelf *gelf.St
+		inputHttp *htp.St
 	}{}
 
 	app.lg, err = zap.New(viper.GetString("LOG_LEVEL"), debug, false)
@@ -87,16 +89,23 @@ func Execute() {
 	)
 
 	app.restApi = rest.New(
-		debug,
 		app.lg,
 		viper.GetString("HTTP_LISTEN"),
 		app.ucs,
+		viper.GetBool("CORS"),
 	)
 
 	app.inputGelf, err = gelf.NewUDP(app.lg, viper.GetString("INPUT_GELF_ADDR"), app.ucs)
 	if err != nil {
 		app.lg.Fatal(err)
 	}
+
+	app.inputHttp = htp.New(
+		app.lg,
+		viper.GetString("INPUT_HTTP_ADDR"),
+		app.ucs,
+		viper.GetBool("CORS"),
+	)
 
 	app.lg.Infow("Starting")
 
@@ -107,6 +116,10 @@ func Execute() {
 	// start input-gelf
 	gelfInputEChan := make(chan error, 1)
 	app.inputGelf.StartUDP(gelfInputEChan)
+
+	// start input-http
+	httpInputEChan := make(chan error, 1)
+	app.inputHttp.Start(httpInputEChan)
 
 	stopSignalChan := make(chan os.Signal, 1)
 	signal.Notify(stopSignalChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -119,6 +132,8 @@ func Execute() {
 		exitCode = 1
 	case <-gelfInputEChan:
 		exitCode = 1
+	case <-httpInputEChan:
+		exitCode = 1
 	}
 
 	app.lg.Infow("Shutting down...")
@@ -126,6 +141,18 @@ func Execute() {
 	err = app.restApi.Shutdown(20 * time.Second)
 	if err != nil {
 		app.lg.Errorw("Fail to shutdown http-api", err)
+		exitCode = 1
+	}
+
+	err = app.inputGelf.Stop()
+	if err != nil {
+		app.lg.Errorw("Fail to shutdown input-gelf", err)
+		exitCode = 1
+	}
+
+	err = app.inputHttp.Shutdown(20 * time.Second)
+	if err != nil {
+		app.lg.Errorw("Fail to shutdown input-http", err)
 		exitCode = 1
 	}
 
@@ -143,6 +170,7 @@ func loadConf() {
 	viper.SetDefault("HTTP_LISTEN", ":80")
 	viper.SetDefault("LOG_LEVEL", "debug")
 	viper.SetDefault("INPUT_GELF_ADDR", ":9234")
+	viper.SetDefault("INPUT_HTTP_ADDR", ":9235")
 	viper.SetDefault("MONGO_HOST", "localhost:27017")
 
 	confFilePath := os.Getenv("CONF_PATH")

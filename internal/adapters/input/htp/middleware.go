@@ -1,4 +1,4 @@
-package rest
+package htp
 
 import (
 	"net/http"
@@ -48,7 +48,7 @@ func (a *St) mwRecovery(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				a.uLogErrorRequest(r, err, "Panic in http handler")
+				a.lg.Errorw("Panic in http handler", err)
 
 				w.WriteHeader(http.StatusInternalServerError)
 			}

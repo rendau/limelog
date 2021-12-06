@@ -1,4 +1,4 @@
-package rest
+package htp
 
 import (
 	"context"
@@ -17,31 +17,26 @@ type St struct {
 	server *http.Server
 }
 
-func New(
-	lg interfaces.Logger,
-	listen string,
-	ucs *usecases.St,
-	cors bool,
-) *St {
-	api := &St{
+func New(lg interfaces.Logger, addr string, ucs *usecases.St, cors bool) *St {
+	res := &St{
 		lg:   lg,
 		ucs:  ucs,
 		cors: cors,
 	}
 
-	api.server = &http.Server{
-		Addr:              listen,
-		Handler:           api.router(),
-		ReadTimeout:       2 * time.Minute,
-		ReadHeaderTimeout: 10 * time.Second,
+	res.server = &http.Server{
+		Addr:              addr,
+		Handler:           res.router(),
+		ReadTimeout:       10 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	return api
+	return res
 }
 
 func (a *St) Start(eChan chan<- error) {
 	go func() {
-		a.lg.Infow("Start rest-api", "addr", a.server.Addr)
+		a.lg.Infow("Start http-input", "addr", a.server.Addr)
 
 		err := a.server.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
