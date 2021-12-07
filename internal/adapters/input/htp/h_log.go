@@ -8,27 +8,31 @@ import (
 )
 
 func (a *St) hLog(w http.ResponseWriter, r *http.Request) {
-	obj := map[string]interface{}{}
+	reqItems := make([]map[string]interface{}, 0)
 
-	if !a.uParseRequestJSON(w, r, &obj) {
+	if !a.uParseRequestJSON(w, r, &reqItems) {
 		return
 	}
 
-	obj[cns.SfTsFieldName] = time.Now().UnixMilli()
-
 	var msg string
 
-	if sMsg, ok := obj["message"]; ok {
-		switch v := sMsg.(type) {
-		case string:
-			msg = v
+	for _, item := range reqItems {
+		item[cns.SfTsFieldName] = time.Now().UnixMilli()
+
+		msg = ""
+
+		if sMsg, ok := item["message"]; ok {
+			switch v := sMsg.(type) {
+			case string:
+				msg = v
+			}
 		}
+
+		item[cns.SfMessageFieldName] = msg
+		item[cns.MessageFieldName] = msg
+
+		a.ucs.LogHandleMsg(item)
 	}
-
-	obj[cns.SfMessageFieldName] = msg
-	obj[cns.MessageFieldName] = msg
-
-	a.ucs.LogHandleMsg(obj)
 
 	w.WriteHeader(200)
 }
