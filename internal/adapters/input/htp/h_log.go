@@ -16,8 +16,10 @@ func (a *St) hLog(w http.ResponseWriter, r *http.Request) {
 
 	var msg string
 
+	nowMilli := time.Now().UnixMilli()
+
 	for _, item := range reqItems {
-		item[cns.SfTsFieldName] = time.Now().UnixMilli()
+		item[cns.SfTsFieldName] = nowMilli
 
 		msg = ""
 
@@ -32,6 +34,8 @@ func (a *St) hLog(w http.ResponseWriter, r *http.Request) {
 		item[cns.MessageFieldName] = msg
 
 		a.ucs.LogHandleMsg(item)
+
+		nowMilli++
 	}
 
 	w.WriteHeader(200)
