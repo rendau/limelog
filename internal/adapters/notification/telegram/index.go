@@ -2,7 +2,6 @@ package telegram
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -42,7 +41,7 @@ func (o *St) Send(msg map[string]interface{}) {
 	var err error
 	var bytes []byte
 
-	const maxMsgFieldValueSize = 120
+	const maxMsgFieldValueSize = 240
 
 	filteredFields := map[string]interface{}{}
 
@@ -101,7 +100,7 @@ func (o *St) Send(msg map[string]interface{}) {
 
 	msgContent := "-------  " + tag + ": \n\n```\n" + string(filteredFieldsRaw) + "\n```"
 
-	fmt.Println(msgContent)
+	// fmt.Println(msgContent)
 
 	tgMsg := tgbotapi.NewMessage(o.chatId, msgContent)
 	tgMsg.ParseMode = "Markdown"
