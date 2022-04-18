@@ -66,8 +66,8 @@ func (o *St) Send(msg map[string]interface{}) {
 		} else {
 			switch val := v.(type) {
 			case string:
-				if len(val) > maxMsgFieldValueSize {
-					v = val[:maxMsgFieldValueSize] + "..."
+				if len([]rune(val)) > maxMsgFieldValueSize {
+					v = string(([]rune(val))[:maxMsgFieldValueSize]) + "..."
 				}
 			case int64, int32, int16, int8, int, float64, float32:
 			default: // try to json-marshal for determine length
