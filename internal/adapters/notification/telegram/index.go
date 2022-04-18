@@ -41,7 +41,7 @@ func (o *St) Send(msg map[string]interface{}) {
 	var err error
 	var bytes []byte
 
-	const maxMsgFieldValueSize = 240
+	const maxMsgFieldValueSize = 500
 
 	filteredFields := map[string]interface{}{}
 
