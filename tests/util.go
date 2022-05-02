@@ -12,6 +12,11 @@ func resetDb() {
 
 	ctx := context.Background()
 
+	err = app.db.Db.Collection("config").Drop(ctx)
+	if err != nil {
+		app.lg.Fatal(err)
+	}
+
 	err = app.db.Db.Collection("log").Drop(ctx)
 	if err != nil {
 		app.lg.Fatal(err)

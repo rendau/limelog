@@ -15,4 +15,5 @@ const (
 	IncorrectPageSize = Err("incorrect_page_size")
 
 	WrongPassword = Err("wrong_password")
+	BadDuration   = Err("bad_duration")
 )

@@ -93,6 +93,10 @@ func (d *St) LogRemove(ctx context.Context, pars *entities.LogRemoveParsSt) erro
 
 	filter := bson.M{}
 
+	if pars.Tag != nil {
+		filter[cns.SfTagFieldName] = *pars.Tag
+	}
+
 	if pars.TsLt != nil {
 		filter[cns.SfTsFieldName] = bson.M{
 			"$lte": pars.TsLt.UnixMilli(),

@@ -60,5 +60,9 @@ func (a *St) router() http.Handler {
 	// log
 	r.HandleFunc("/log/list", a.hLogList).Methods("POST")
 
+	// config
+	r.HandleFunc("/config", a.hConfigGet).Methods("GET")
+	r.HandleFunc("/config", a.hConfigSet).Methods("PUT")
+
 	return a.middleware(r)
 }

@@ -7,12 +7,11 @@ import (
 )
 
 type St struct {
-	lg                interfaces.Logger
-	db                interfaces.Db
-	testing           bool
-	authPsw           string
-	sesToken          string
-	logLivePeriodDays int
+	lg       interfaces.Logger
+	db       interfaces.Db
+	testing  bool
+	authPsw  string
+	sesToken string
 
 	wg sync.WaitGroup
 
@@ -33,15 +32,13 @@ func New(
 	testing bool,
 	authPsw string,
 	sesToken string,
-	logLivePeriodDays int,
 ) *St {
 	c := &St{
-		lg:                lg,
-		db:                db,
-		testing:           testing,
-		authPsw:           authPsw,
-		sesToken:          sesToken,
-		logLivePeriodDays: logLivePeriodDays,
+		lg:       lg,
+		db:       db,
+		testing:  testing,
+		authPsw:  authPsw,
+		sesToken: sesToken,
 	}
 
 	c.Config = NewConfig(c)

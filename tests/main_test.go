@@ -52,7 +52,6 @@ func TestMain(m *testing.M) {
 		true,
 		"password",
 		"token",
-		0,
 	)
 
 	app.nf = notificationMock.New(app.lg)

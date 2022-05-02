@@ -11,5 +11,6 @@ type LogListParsSt struct {
 }
 
 type LogRemoveParsSt struct {
+	Tag  *string
 	TsLt *time.Time
 }
