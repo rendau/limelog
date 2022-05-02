@@ -45,7 +45,7 @@ func TestClean(t *testing.T) {
 		"mid":                  "s2-1",
 	})
 
-	time.Sleep(time.Second)
+	time.Sleep(2 * time.Second)
 
 	logs, _, err := app.ucs.LogList(ctx, &entities.LogListParsSt{
 		PaginationParams: entities.PaginationParams{PageSize: 100},
@@ -59,7 +59,7 @@ func TestClean(t *testing.T) {
 			Exceptions: []entities.ConfigRotationExceptionSt{
 				{
 					Tag: "s1",
-					Dur: 50 * time.Second,
+					Dur: 1,
 				},
 			},
 		},
@@ -88,7 +88,7 @@ func TestClean(t *testing.T) {
 
 	err = app.ucs.ConfigSet(ctx, &entities.ConfigSt{
 		Rotation: entities.ConfigRotationSt{
-			DefaultDur: 50 * time.Second,
+			DefaultDur: 1,
 			Exceptions: []entities.ConfigRotationExceptionSt{
 				{
 					Tag: "s1",

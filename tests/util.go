@@ -29,6 +29,11 @@ func resetDb() {
 }
 
 func prepareDbForNewTest() {
+	err := app.core.Config.Set(context.Background(), &entities.ConfigSt{})
+	if err != nil {
+		app.lg.Fatal(err)
+	}
+
 	resetDb()
 	app.nf.Clean()
 }

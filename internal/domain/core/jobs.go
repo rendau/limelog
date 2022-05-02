@@ -76,7 +76,7 @@ func (c *Jobs) logCleaner() {
 			for _, exc = range conf.Rotation.Exceptions {
 				if exc.Tag == tag {
 					if exc.Dur > 0 {
-						tsLt = now.Add(-exc.Dur)
+						tsLt = now.Add(-time.Duration(exc.Dur) * time.Minute)
 						_ = c.r.Log.Remove(ctx, pars)
 					}
 
@@ -87,7 +87,7 @@ func (c *Jobs) logCleaner() {
 
 			if !found {
 				if conf.Rotation.DefaultDur > 0 {
-					tsLt = now.Add(-conf.Rotation.DefaultDur)
+					tsLt = now.Add(-time.Duration(conf.Rotation.DefaultDur) * time.Minute)
 					_ = c.r.Log.Remove(ctx, pars)
 				}
 			}

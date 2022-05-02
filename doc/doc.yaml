@@ -2,6 +2,36 @@ basePath: /ll
 consumes:
 - application/json
 definitions:
+  ConfigRotationExceptionSt:
+    properties:
+      dur:
+        format: int64
+        type: integer
+        x-go-name: Dur
+      tag:
+        type: string
+        x-go-name: Tag
+    type: object
+    x-go-package: github.com/rendau/limelog/internal/domain/entities
+  ConfigRotationSt:
+    properties:
+      default_dur:
+        format: int64
+        type: integer
+        x-go-name: DefaultDur
+      exceptions:
+        items:
+          $ref: '#/definitions/ConfigRotationExceptionSt'
+        type: array
+        x-go-name: Exceptions
+    type: object
+    x-go-package: github.com/rendau/limelog/internal/domain/entities
+  ConfigSt:
+    properties:
+      rotation:
+        $ref: '#/definitions/ConfigRotationSt'
+    type: object
+    x-go-package: github.com/rendau/limelog/internal/domain/entities
   ErrRepSt:
     properties:
       error_code:
@@ -44,6 +74,29 @@ info:
   title: LimeLog API.
   version: 1.0.0
 paths:
+  /config:
+    get:
+      operationId: hConfigGet
+      responses:
+        "200":
+          $ref: '#/responses/configGetRep'
+        "400":
+          $ref: '#/responses/errRep'
+      security:
+      - token: []
+      tags:
+      - config
+    put:
+      operationId: hConfigSet
+      responses:
+        "200":
+          description: ""
+        "400":
+          $ref: '#/responses/errRep'
+      security:
+      - token: []
+      tags:
+      - config
   /log/list:
     post:
       operationId: hLogList
@@ -124,6 +177,10 @@ paths:
 produces:
 - application/json
 responses:
+  configGetRep:
+    description: ""
+    schema:
+      $ref: '#/definitions/ConfigSt'
   errRep:
     description: ""
     schema:

@@ -57,15 +57,18 @@ func (c *Config) Set(ctx context.Context, config *entities.ConfigSt) error {
 		return err
 	}
 
-	c.vMu.Lock()
-	defer c.vMu.Unlock()
-
 	err = c.r.db.ConfigSet(ctx, config)
 	if err != nil {
 		return err
 	}
 
-	c.v = nil
+	c.CleanCache()
 
 	return nil
+}
+
+func (c *Config) CleanCache() {
+	c.vMu.Lock()
+	c.v = nil
+	c.vMu.Unlock()
 }
