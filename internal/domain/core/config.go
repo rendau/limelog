@@ -35,6 +35,10 @@ func (c *Config) Get(ctx context.Context) (*entities.ConfigSt, error) {
 			v = &entities.ConfigSt{}
 		}
 
+		if v.Rotation.Exceptions == nil {
+			v.Rotation.Exceptions = []entities.ConfigRotationExceptionSt{}
+		}
+
 		c.v = v
 	}
 
