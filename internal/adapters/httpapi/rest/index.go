@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mechta-market/limelog/internal/domain/usecases"
-	"github.com/mechta-market/limelog/internal/interfaces"
+	"github.com/rendau/limelog/internal/domain/usecases"
+	"github.com/rendau/limelog/internal/interfaces"
 )
 
 type St struct {

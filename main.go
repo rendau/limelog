@@ -1,6 +1,6 @@
 package main
 
-import "github.com/mechta-market/limelog/cmd"
+import "github.com/rendau/limelog/cmd"
 
 func main() {
 	cmd.Execute()

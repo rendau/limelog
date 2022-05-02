@@ -2,23 +2,26 @@ name: Deploy
 on:
   push:
     branches:
-      - master
+      - disable
 jobs:
   build:
     name: Build and deploy
     runs-on: ubuntu-latest
     env:
-      OWNER: mechta-market
+      OWNER: rendau
       IMAGE: limelog
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
       - name: Docker login
-        run: docker login -u=json_key -p='${{  secrets.CR_YANDEX_PASSWORD }}' cr.yandex
+        run: |
+          echo ${{ secrets.CR_PAT }} | docker login -u $OWNER --password-stdin ghcr.io
 
-      - name: Build Docker image
-        run: docker build -t cr.yandex/${{  secrets.CR_YANDEX_ID }}/$IMAGE:latest .
+      - name: Docker build
+        run: |
+          docker build -t ghcr.io/$OWNER/$IMAGE:latest .
 
       - name: Docker push
-        run: docker push cr.yandex/${{  secrets.CR_YANDEX_ID }}/$IMAGE:latest
+        run: |
+          docker push ghcr.io/$OWNER/$IMAGE:latest

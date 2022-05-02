@@ -3,8 +3,8 @@ package usecases
 import (
 	"context"
 
-	"github.com/mechta-market/limelog/internal/domain/entities"
-	"github.com/mechta-market/limelog/internal/domain/util"
+	"github.com/rendau/limelog/internal/domain/entities"
+	"github.com/rendau/limelog/internal/domain/util"
 )
 
 func (u *St) LogHandleMsg(msg map[string]interface{}) {

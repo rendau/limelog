@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/mechta-market/limelog/internal/interfaces"
+	"github.com/rendau/limelog/internal/interfaces"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

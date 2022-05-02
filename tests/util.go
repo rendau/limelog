@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mechta-market/limelog/internal/domain/entities"
+	"github.com/rendau/limelog/internal/domain/entities"
 )
 
 func resetDb() {

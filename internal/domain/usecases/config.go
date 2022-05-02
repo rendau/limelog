@@ -3,7 +3,7 @@ package usecases
 import (
 	"context"
 
-	"github.com/mechta-market/limelog/internal/domain/entities"
+	"github.com/rendau/limelog/internal/domain/entities"
 )
 
 func (u *St) ConfigSet(ctx context.Context,

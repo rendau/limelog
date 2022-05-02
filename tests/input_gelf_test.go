@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mechta-market/limelog/internal/cns"
-	"github.com/mechta-market/limelog/internal/domain/entities"
+	"github.com/rendau/limelog/internal/cns"
+	"github.com/rendau/limelog/internal/domain/entities"
 	"github.com/stretchr/testify/require"
 )
 

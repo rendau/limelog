@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mechta-market/limelog/internal/domain/entities"
-	"github.com/mechta-market/limelog/internal/domain/errs"
+	"github.com/rendau/limelog/internal/domain/entities"
+	"github.com/rendau/limelog/internal/domain/errs"
 )
 
 func (a *St) uParseRequestJSON(w http.ResponseWriter, r *http.Request, dst interface{}) bool {

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/mechta-market/limelog/internal/cns"
-	"github.com/mechta-market/limelog/internal/domain/core"
+	"github.com/rendau/limelog/internal/cns"
+	"github.com/rendau/limelog/internal/domain/core"
 )
 
 func BenchmarkGenerateRandomLogs(b *testing.B) {

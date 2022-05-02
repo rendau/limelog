@@ -9,7 +9,7 @@ definitions:
         type: string
         x-go-name: ErrorCode
     type: object
-    x-go-package: github.com/mechta-market/limelog/internal/adapters/httpapi/rest
+    x-go-package: github.com/rendau/limelog/internal/adapters/httpapi/rest
   LogListParsSt:
     properties:
       filter_obj:
@@ -26,10 +26,10 @@ definitions:
         type: integer
         x-go-name: PageSize
     type: object
-    x-go-package: github.com/mechta-market/limelog/internal/domain/entities
+    x-go-package: github.com/rendau/limelog/internal/domain/entities
   ProfileSt:
     type: object
-    x-go-package: github.com/mechta-market/limelog/internal/domain/entities
+    x-go-package: github.com/rendau/limelog/internal/domain/entities
 host: api.zeon.mechta.market
 info:
   description: |-

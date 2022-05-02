@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/mechta-market/limelog/internal/domain/entities"
+	"github.com/rendau/limelog/internal/domain/entities"
 )
 
 // swagger:route POST /log/list log hLogList

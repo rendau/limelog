@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mechta-market/limelog/internal/cns"
-	"github.com/mechta-market/limelog/internal/domain/usecases"
-	"github.com/mechta-market/limelog/internal/interfaces"
+	"github.com/rendau/limelog/internal/cns"
+	"github.com/rendau/limelog/internal/domain/usecases"
+	"github.com/rendau/limelog/internal/interfaces"
 )
 
 const (

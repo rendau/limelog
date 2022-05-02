@@ -3,8 +3,8 @@ package core
 import (
 	"context"
 
-	"github.com/mechta-market/limelog/internal/domain/entities"
-	"github.com/mechta-market/limelog/internal/domain/errs"
+	"github.com/rendau/limelog/internal/domain/entities"
+	"github.com/rendau/limelog/internal/domain/errs"
 )
 
 type Profile struct {

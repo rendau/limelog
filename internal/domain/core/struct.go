@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/mechta-market/limelog/internal/interfaces"
+	"github.com/rendau/limelog/internal/interfaces"
 )
 
 type NotificationProviderSt struct {

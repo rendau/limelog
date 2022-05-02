@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mechta-market/limelog/internal/cns"
+	"github.com/rendau/limelog/internal/cns"
 )
 
 func (a *St) hLog(w http.ResponseWriter, r *http.Request) {

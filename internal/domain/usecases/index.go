@@ -1,8 +1,8 @@
 package usecases
 
 import (
-	"github.com/mechta-market/limelog/internal/domain/core"
-	"github.com/mechta-market/limelog/internal/interfaces"
+	"github.com/rendau/limelog/internal/domain/core"
+	"github.com/rendau/limelog/internal/interfaces"
 )
 
 type St struct {

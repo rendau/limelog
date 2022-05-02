@@ -1,6 +1,6 @@
-module github.com/mechta-market/limelog
+module github.com/rendau/limelog
 
-go 1.17
+go 1.18
 
 require (
 	github.com/brianvoe/gofakeit/v6 v6.9.0

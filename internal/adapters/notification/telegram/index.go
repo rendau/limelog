@@ -7,8 +7,8 @@ import (
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/mechta-market/limelog/internal/cns"
-	"github.com/mechta-market/limelog/internal/interfaces"
+	"github.com/rendau/limelog/internal/cns"
+	"github.com/rendau/limelog/internal/interfaces"
 )
 
 type St struct {
@@ -71,14 +71,14 @@ func (o *St) Send(msg map[string]interface{}) {
 				}
 			case int64, int32, int16, int8, int, float64, float32:
 			default: // try to json-marshal for determine length
-				bytes, err = json.MarshalIndent(&v, "", "   ")
+				bytes, err = json.Marshal(&v)
 				if err != nil {
 					log.Println("Fail ot marshal json", err)
 					continue
 				}
 				vStr := string(bytes)
-				if len(vStr) > maxMsgFieldValueSize {
-					vStr = vStr[:maxMsgFieldValueSize] + "..."
+				if len([]rune(vStr)) > maxMsgFieldValueSize {
+					vStr = string(([]rune(vStr))[:maxMsgFieldValueSize]) + "..."
 					v = vStr
 				}
 			}

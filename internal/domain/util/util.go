@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mechta-market/limelog/internal/cns"
-	"github.com/mechta-market/limelog/internal/domain/entities"
-	"github.com/mechta-market/limelog/internal/domain/errs"
+	"github.com/rendau/limelog/internal/cns"
+	"github.com/rendau/limelog/internal/domain/entities"
+	"github.com/rendau/limelog/internal/domain/errs"
 )
 
 func RequirePageSize(pars entities.PaginationParams, allowedPageSize int64) error {
