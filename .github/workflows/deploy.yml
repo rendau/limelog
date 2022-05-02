@@ -2,7 +2,7 @@ name: Deploy
 on:
   push:
     branches:
-      - disable
+      - master
 jobs:
   build:
     name: Build and deploy

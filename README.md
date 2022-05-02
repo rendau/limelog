@@ -1,4 +1,4 @@
-# Limelog
+# LimeLog
 
 ### Env variables:
 
