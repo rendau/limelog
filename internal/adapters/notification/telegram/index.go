@@ -2,11 +2,12 @@ package telegram
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/rendau/limelog/internal/cns"
 	"github.com/rendau/limelog/internal/interfaces"
 )
@@ -87,23 +88,27 @@ func (o *St) Send(msg map[string]interface{}) {
 		filteredFields[k] = v
 	}
 
-	filteredFieldsRaw, err := json.MarshalIndent(&filteredFields, "", "   ")
-	if err != nil {
-		log.Println("Fail ot marshal json", err)
-		return
-	}
+	// filteredFieldsRaw, err := json.MarshalIndent(&filteredFields, "", "   ")
+	// if err != nil {
+	// 	log.Println("Fail ot marshal json", err)
+	// 	return
+	// }
 
 	tag, ok := (msg[cns.SfTagFieldName]).(string)
 	if !ok {
 		tag = ""
 	}
 
-	msgContent := "-------  " + tag + ": \n\n```\n" + string(filteredFieldsRaw) + "\n```"
+	msgContent := " " + tag + ": \n\n```\n"
 
-	// fmt.Println(msgContent)
+	for k, v := range filteredFields {
+		msgContent += fmt.Sprintf("   %s: \t\t%v\n", k, v)
+	}
+
+	msgContent += "```"
 
 	tgMsg := tgbotapi.NewMessage(o.chatId, msgContent)
-	tgMsg.ParseMode = "Markdown"
+	tgMsg.ParseMode = tgbotapi.ModeMarkdownV2
 
 	_, err = o.botApi.Send(tgMsg)
 	if err != nil {
