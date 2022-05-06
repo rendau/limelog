@@ -23,8 +23,13 @@ func TestSt_Send(t *testing.T) {
 	require.NotNil(t, nf)
 
 	nf.Send(map[string]interface{}{
-		cns.SfTagFieldName: "hello",
-		"Hello":            "world!",
-		"123":              321,
+		cns.SfTagFieldName: "credit-broker-test",
+		cns.LevelFieldName: "warn",
+		cns.SfTsFieldName:  "2022-05-06T13:26:23+06:00",
+		"caller":           "core/ofr.go:482",
+		"msg":              "Offer not found",
+		"prv_id":           "FreedomFinance",
+		"ord_id":           0,
+		"prv_ord_id":       "fd5efb59-eeea-4f7f-a64a-8edec4200bb9",
 	})
 }
