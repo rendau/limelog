@@ -102,7 +102,7 @@ func (o *St) Send(msg map[string]interface{}) {
 	msgContent := " `" + tag + "`: \n\n```\n"
 
 	for k, v := range filteredFields {
-		msgContent += fmt.Sprintf("   %s: \t\t%v\n", k, v)
+		msgContent += fmt.Sprintf("      %s: \t\t%v\n", k, v)
 	}
 
 	msgContent += "```"
