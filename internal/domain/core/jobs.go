@@ -52,7 +52,7 @@ func (c *Jobs) logCleaner() {
 	}
 
 	for range ticker.C {
-		c.r.lg.Infow("Log-cleaner tick")
+		// c.r.lg.Infow("Log-cleaner tick")
 
 		conf, err = c.r.Config.Get(ctx)
 		if err != nil {
