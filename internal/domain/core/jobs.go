@@ -75,6 +75,8 @@ func (c *Jobs) logCleaner() {
 
 			for _, exc = range conf.Rotation.Exceptions {
 				if exc.Tag == tag {
+					c.r.lg.Infow("LogCleaner: found tag "+tag, "dur_min", exc.Dur)
+
 					if exc.Dur > 0 {
 						tsLt = now.Add(-time.Duration(exc.Dur) * time.Minute)
 						_ = c.r.Log.Remove(ctx, pars)
@@ -86,6 +88,8 @@ func (c *Jobs) logCleaner() {
 			}
 
 			if !found {
+				c.r.lg.Infow("LogCleaner: not found tag "+tag, "dur_min", conf.Rotation.DefaultDur)
+
 				if conf.Rotation.DefaultDur > 0 {
 					tsLt = now.Add(-time.Duration(conf.Rotation.DefaultDur) * time.Minute)
 					_ = c.r.Log.Remove(ctx, pars)
