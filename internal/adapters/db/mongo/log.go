@@ -58,11 +58,13 @@ func (d *St) LogList(ctx context.Context, pars *entities.LogListParsSt) ([]map[s
 	}
 
 	skip := pars.Page * pars.PageSize
+	allowDiskUse := true
 
 	cur, err := collection.Find(ctx, filter, &options.FindOptions{
-		Sort:  bson.M{"sf_ts": -1},
-		Skip:  &skip,
-		Limit: &pars.PageSize,
+		Sort:         bson.M{"sf_ts": -1},
+		Skip:         &skip,
+		Limit:        &pars.PageSize,
+		AllowDiskUse: &allowDiskUse,
 	})
 	if err != nil {
 		return nil, 0, d.handleErr(err)
