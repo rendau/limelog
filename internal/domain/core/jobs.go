@@ -78,7 +78,7 @@ func (c *Jobs) logCleaner() {
 					c.r.lg.Infow("LogCleaner: found tag "+tag, "dur_min", exc.Dur)
 
 					if exc.Dur > 0 {
-						tsLt = now.Add(-time.Duration(exc.Dur) * time.Minute)
+						tsLt = timeSubMinutes(now, exc.Dur)
 						_ = c.r.Log.Remove(ctx, pars)
 					}
 
@@ -91,7 +91,7 @@ func (c *Jobs) logCleaner() {
 				c.r.lg.Infow("LogCleaner: not found tag "+tag, "dur_min", conf.Rotation.DefaultDur)
 
 				if conf.Rotation.DefaultDur > 0 {
-					tsLt = now.Add(-time.Duration(conf.Rotation.DefaultDur) * time.Minute)
+					tsLt = timeSubMinutes(now, conf.Rotation.DefaultDur)
 					_ = c.r.Log.Remove(ctx, pars)
 				}
 			}
@@ -100,4 +100,19 @@ func (c *Jobs) logCleaner() {
 		// refresh tags
 		_ = c.r.Tag.RefreshAll(ctx)
 	}
+}
+
+func timeSubMinutes(t time.Time, m int64) time.Time {
+	days := m / 1440
+	m = m % 1440
+
+	if days > 0 {
+		t = t.AddDate(0, 0, -int(days))
+	}
+
+	if m > 0 {
+		t = t.Add(-time.Duration(m) * time.Minute)
+	}
+
+	return t
 }
