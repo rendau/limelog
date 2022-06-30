@@ -10,7 +10,7 @@ import (
 // @Router   /tag [get]
 // @Tags     tag
 // @Produce  json
-// @Success  200  {array}  string
+// @Success  200  {array}   string
 // @Failure  400  {object}  dopTypes.ErrRep
 func (o *St) hTagList(c *gin.Context) {
 	result, err := o.ucs.TagList(o.getRequestContext(c))

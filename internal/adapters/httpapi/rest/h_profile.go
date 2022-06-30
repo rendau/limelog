@@ -24,7 +24,7 @@ func (o *St) hProfileGet(c *gin.Context) {
 
 // @Router   /profile/auth [post]
 // @Tags     profile
-// @Param    body    body  entities.ProfileAuthReqSt  false  "body"
+// @Param    body  body  entities.ProfileAuthReqSt  false  "body"
 // @Produce  json
 // @Success  200  {object}  entities.ProfileAuthRepSt
 // @Failure  400  {object}  dopTypes.ErrRep

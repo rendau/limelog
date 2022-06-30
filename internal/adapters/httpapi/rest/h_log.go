@@ -11,9 +11,9 @@ import (
 
 // @Router   /log/list [post]
 // @Tags     log
-// @Param    body  body  entities.LogListParsSt  false  "body"
-// @Success  200  {object}  entities.LogListRepSt
-// @Failure  400  {object}  dopTypes.ErrRep
+// @Param    body  body      entities.LogListParsSt  false  "body"
+// @Success  200   {object}  entities.LogListRepSt
+// @Failure  400   {object}  dopTypes.ErrRep
 func (o *St) hLogList(c *gin.Context) {
 	pars := &entities.LogListParsSt{}
 	if !dopHttps.BindJSON(c, pars) {

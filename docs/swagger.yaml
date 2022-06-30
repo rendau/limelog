@@ -1,0 +1,214 @@
+definitions:
+  dopTypes.ErrRep:
+    properties:
+      desc:
+        type: string
+      error_code:
+        type: string
+      fields:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  entities.ConfigRotationExceptionSt:
+    properties:
+      dur:
+        type: integer
+      tag:
+        type: string
+    type: object
+  entities.ConfigRotationSt:
+    properties:
+      default_dur:
+        type: integer
+      exceptions:
+        items:
+          $ref: '#/definitions/entities.ConfigRotationExceptionSt'
+        type: array
+    type: object
+  entities.ConfigSt:
+    properties:
+      rotation:
+        $ref: '#/definitions/entities.ConfigRotationSt'
+    type: object
+  entities.LogListParsSt:
+    properties:
+      cols:
+        items:
+          type: string
+        type: array
+      filter_obj:
+        additionalProperties:
+          type: any
+        type: object
+      only_count:
+        type: boolean
+      page:
+        type: integer
+      page_size:
+        type: integer
+      sort:
+        items:
+          type: string
+        type: array
+      sort_name:
+        type: string
+      with_total_count:
+        type: boolean
+    type: object
+  entities.LogListRepSt:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      results:
+        items:
+          additionalProperties:
+            type: any
+          type: object
+        type: array
+      total_count:
+        type: integer
+    type: object
+  entities.ProfileAuthRepSt:
+    properties:
+      token:
+        type: string
+    type: object
+  entities.ProfileAuthReqSt:
+    properties:
+      password:
+        type: string
+    type: object
+  entities.ProfileSt:
+    type: object
+info:
+  contact: {}
+paths:
+  /config:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ConfigSt'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dopTypes.ErrRep'
+      tags:
+      - config
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: body
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/entities.ConfigSt'
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dopTypes.ErrRep'
+      summary: Set config
+      tags:
+      - config
+  /log/list:
+    post:
+      parameters:
+      - description: body
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/entities.LogListParsSt'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.LogListRepSt'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dopTypes.ErrRep'
+      tags:
+      - log
+  /profile:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ProfileSt'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dopTypes.ErrRep'
+      tags:
+      - profile
+  /profile/auth:
+    post:
+      parameters:
+      - description: body
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/entities.ProfileAuthReqSt'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ProfileAuthRepSt'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dopTypes.ErrRep'
+      tags:
+      - profile
+  /tag:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dopTypes.ErrRep'
+      tags:
+      - tag
+  /tag/:id:
+    delete:
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dopTypes.ErrRep'
+      tags:
+      - tag
+swagger: "2.0"
