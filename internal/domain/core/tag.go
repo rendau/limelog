@@ -24,7 +24,7 @@ func (c *Tag) Set(ctx context.Context, value string) error {
 	defer c.cacheMu.Unlock()
 
 	if _, ok := c.cache[value]; !ok {
-		err := c.r.db.TagSet(ctx, value)
+		err := c.r.repo.TagSet(ctx, value)
 		if err != nil {
 			return err
 		}
@@ -36,14 +36,14 @@ func (c *Tag) Set(ctx context.Context, value string) error {
 }
 
 func (c *Tag) List(ctx context.Context) ([]string, error) {
-	return c.r.db.TagList(ctx)
+	return c.r.repo.TagList(ctx)
 }
 
 func (c *Tag) Remove(ctx context.Context, value string) error {
 	c.cacheMu.Lock()
 	defer c.cacheMu.Unlock()
 
-	err := c.r.db.TagRemove(ctx, value)
+	err := c.r.repo.TagRemove(ctx, value)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (c *Tag) Remove(ctx context.Context, value string) error {
 }
 
 func (c *Tag) RefreshAll(ctx context.Context) error {
-	finalList, err := c.r.db.LogListDistinctTag(ctx)
+	finalList, err := c.r.repo.LogListDistinctTag(ctx)
 	if err != nil {
 		return err
 	}

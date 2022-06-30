@@ -1,16 +1,16 @@
 package htp
 
 import (
-	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	dopHttps "github.com/rendau/dop/adapters/server/https"
 	"github.com/rendau/limelog/internal/cns"
 )
 
-func (a *St) hLog(w http.ResponseWriter, r *http.Request) {
-	reqItems := make([]map[string]interface{}, 0)
-
-	if !a.uParseRequestJSON(w, r, &reqItems) {
+func (o *St) hLog(c *gin.Context) {
+	reqItems := make([]map[string]any, 0)
+	if !dopHttps.BindJSON(c, &reqItems) {
 		return
 	}
 
@@ -33,10 +33,8 @@ func (a *St) hLog(w http.ResponseWriter, r *http.Request) {
 		item[cns.SfMessageFieldName] = msg
 		item[cns.MessageFieldName] = msg
 
-		a.ucs.LogHandleMsg(item)
+		o.ucs.LogHandleMsg(item)
 
 		nowMilli++
 	}
-
-	w.WriteHeader(200)
 }

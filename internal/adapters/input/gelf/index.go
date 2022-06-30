@@ -14,9 +14,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rendau/dop/adapters/logger"
+	"github.com/rendau/dop/dopErrs"
 	"github.com/rendau/limelog/internal/cns"
 	"github.com/rendau/limelog/internal/domain/usecases"
-	"github.com/rendau/limelog/internal/interfaces"
 )
 
 const (
@@ -32,52 +33,36 @@ var (
 )
 
 type St struct {
-	lg interfaces.Logger
-
-	udpAddr *net.UDPAddr
-
+	lg  logger.Lite
 	ucs *usecases.St
 
-	conn net.Conn
-
+	udpAddr          *net.UDPAddr
+	conn             net.Conn
+	eChan            chan error
 	udpChunkedMsgs   map[string]*udpChunkedMsgSt
 	udpChunkedMsgsMu sync.Mutex
 }
 
-func NewUDP(lg interfaces.Logger, addr string, ucs *usecases.St) (*St, error) {
+func Start(lg logger.Lite, addr string, ucs *usecases.St) (*St, error) {
 	var err error
 
-	res := &St{
+	s := &St{
 		lg:             lg,
 		ucs:            ucs,
+		eChan:          make(chan error, 1),
 		udpChunkedMsgs: map[string]*udpChunkedMsgSt{},
 	}
 
-	if addr != "" {
-		res.udpAddr, err = net.ResolveUDPAddr("udp", addr)
-		if err != nil {
-			lg.Errorw("Fail to ResolveUDPAddr", err)
-
-			return nil, err
-		}
+	if addr == "" {
+		lg.Infow("UDP listen address is not specified")
+		return nil, dopErrs.ServiceNA
 	}
 
-	return res, nil
-}
+	s.udpAddr, err = net.ResolveUDPAddr("udp", addr)
+	if err != nil {
+		lg.Errorw("Fail to ResolveUDPAddr", err, "addr", addr)
 
-func (o *St) GetListenAddress() string {
-	if o.udpAddr != nil {
-		return o.udpAddr.String()
-	}
-	return ""
-}
-
-func (o *St) StartUDP(eChan chan<- error) {
-	var err error
-
-	if o.udpAddr == nil {
-		o.lg.Infow("UDP listen address is not specified")
-		return
+		return nil, err
 	}
 
 	go func() {
@@ -85,27 +70,27 @@ func (o *St) StartUDP(eChan chan<- error) {
 		defer close(jobCh)
 
 		for i := 0; i < workerCount; i++ {
-			go o.handlePacket(jobCh)
+			go s.handlePacket(jobCh)
 		}
 
-		o.conn, err = net.ListenUDP("udp", o.udpAddr)
+		s.conn, err = net.ListenUDP("udp", s.udpAddr)
 		if err != nil {
-			o.lg.Errorw("Fail to ListenUDP", err)
-			eChan <- err
+			s.lg.Errorw("Fail to ListenUDP", err)
+			s.eChan <- err
 			return
 		}
 
-		o.lg.Infow("Start gelf-udp", "addr", o.conn.LocalAddr().String())
+		s.lg.Infow("Start gelf-udp", "addr", s.conn.LocalAddr().String())
 
 		cBuf := make([]byte, chunkSize)
 		var n int
 
 		for {
-			n, err = o.conn.Read(cBuf)
+			n, err = s.conn.Read(cBuf)
 			if err != nil {
 				if !errors.Is(err, net.ErrClosed) {
-					o.lg.Errorw("Fail to Read udp packet", err)
-					eChan <- err
+					s.lg.Errorw("Fail to Read udp packet", err)
+					s.eChan <- err
 				}
 				return
 			}
@@ -113,14 +98,37 @@ func (o *St) StartUDP(eChan chan<- error) {
 			pkt := make([]byte, n)
 			copy(pkt, cBuf[:n])
 
-			// o.lg.Infow("UDP packet", "data", string(pkt))
+			// s.lg.Infow("UDP packet", "data", string(pkt))
 
 			jobCh <- pkt
 		}
 	}()
+
+	return s, nil
 }
 
-func (o *St) handlePacket(jobCh <-chan []byte) {
+func (s *St) GetListenAddress() string {
+	if s.udpAddr != nil {
+		return s.udpAddr.String()
+	}
+	return ""
+}
+
+func (s *St) Wait() <-chan error {
+	return s.eChan
+}
+
+func (s *St) Stop() bool {
+	err := s.conn.Close()
+	if err != nil {
+		s.lg.Errorw("Fail to close udp-connection", err)
+		return false
+	}
+
+	return true
+}
+
+func (s *St) handlePacket(jobCh <-chan []byte) {
 	h := func(pkt []byte) {
 		pktLen := len(pkt)
 
@@ -136,15 +144,15 @@ func (o *St) handlePacket(jobCh <-chan []byte) {
 			payload := pkt[12:]
 			payloadLen := len(payload)
 
-			o.udpChunkedMsgsMu.Lock()
+			s.udpChunkedMsgsMu.Lock()
 
-			chunkedMsg, ok := o.udpChunkedMsgs[mid]
+			chunkedMsg, ok := s.udpChunkedMsgs[mid]
 			if !ok {
 				chunkedMsg = &udpChunkedMsgSt{
 					sq:     int(seqCount),
 					chunks: make([][]byte, seqCount),
 				}
-				o.udpChunkedMsgs[mid] = chunkedMsg
+				s.udpChunkedMsgs[mid] = chunkedMsg
 			}
 
 			// copy payload
@@ -163,17 +171,17 @@ func (o *St) handlePacket(jobCh <-chan []byte) {
 					}
 				}
 
-				delete(o.udpChunkedMsgs, mid)
+				delete(s.udpChunkedMsgs, mid)
 			}
 
-			o.udpChunkedMsgsMu.Unlock()
+			s.udpChunkedMsgsMu.Unlock()
 		} else { // not chunked
 			msg = make([]byte, pktLen)
 			copy(msg, pkt)
 		}
 
 		if msg != nil {
-			o.HandleMsg(msg)
+			s.HandleMsg(msg)
 		}
 	}
 
@@ -182,7 +190,7 @@ func (o *St) handlePacket(jobCh <-chan []byte) {
 	}
 }
 
-func (o *St) HandleMsg(data []byte) {
+func (s *St) HandleMsg(data []byte) {
 	var err error
 
 	if len(data) < 3 {
@@ -196,25 +204,25 @@ func (o *St) HandleMsg(data []byte) {
 	if bytes.Equal(magic, magicGzip) {
 		reader, err := gzip.NewReader(bytes.NewReader(data))
 		if err != nil {
-			o.lg.Errorw("Fail to gzip.NewReader", err)
+			s.lg.Errorw("Fail to gzip.NewReader", err)
 			return
 		}
 
 		dataRaw, err = ioutil.ReadAll(reader)
 		if err != nil {
-			o.lg.Errorw("Fail to ioutil.ReadAll from data", err)
+			s.lg.Errorw("Fail to ioutil.ReadAll from data", err)
 			return
 		}
 	} else if magic[0] == magicZlib[0] && (int(magic[0])*256+int(magic[1]))%31 == 0 {
 		reader, err := zlib.NewReader(bytes.NewReader(data))
 		if err != nil {
-			o.lg.Errorw("Fail to zlib.NewReader", err)
+			s.lg.Errorw("Fail to zlib.NewReader", err)
 			return
 		}
 
 		dataRaw, err = ioutil.ReadAll(reader)
 		if err != nil {
-			o.lg.Errorw("Fail to ioutil.ReadAll from data", err)
+			s.lg.Errorw("Fail to ioutil.ReadAll from data", err)
 			return
 		}
 	} else {
@@ -223,15 +231,15 @@ func (o *St) HandleMsg(data []byte) {
 
 	// fmt.Println("GELF message", string(dataRaw))
 
-	dataObj := map[string]interface{}{}
+	dataObj := map[string]any{}
 
 	err = json.Unmarshal(dataRaw, &dataObj)
 	if err != nil {
-		o.lg.Errorw("Fail to unmarshal json", err)
+		s.lg.Errorw("Fail to unmarshal json", err)
 		return
 	}
 
-	res := map[string]interface{}{}
+	res := map[string]any{}
 
 	// system fields
 	for k, v := range dataObj {
@@ -249,7 +257,7 @@ func (o *St) HandleMsg(data []byte) {
 		case int64:
 			res[cns.SfTsFieldName] = time.Unix(v, 0).UnixMilli()
 		default:
-			o.lg.Warnw("Undefined data-type for timestamp", "data_type", reflect.TypeOf(timestamp))
+			s.lg.Warnw("Undefined data-type for timestamp", "data_type", reflect.TypeOf(timestamp))
 			res[cns.SfTsFieldName] = time.Now().UnixMilli()
 		}
 	}
@@ -278,12 +286,12 @@ func (o *St) HandleMsg(data []byte) {
 		res[cns.MessageFieldName] = msg
 
 		if msg != "" {
-			obj := map[string]interface{}{}
+			obj := map[string]any{}
 
 			// try to parse json
 			err = json.Unmarshal([]byte(msg), &obj)
 			if err != nil {
-				obj = map[string]interface{}{}
+				obj = map[string]any{}
 			}
 
 			for k, v := range obj {
@@ -298,9 +306,5 @@ func (o *St) HandleMsg(data []byte) {
 		}
 	}
 
-	o.ucs.LogHandleMsg(res)
-}
-
-func (o *St) Stop() error {
-	return o.conn.Close()
+	s.ucs.LogHandleMsg(res)
 }

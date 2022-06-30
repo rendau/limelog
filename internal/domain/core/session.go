@@ -31,6 +31,10 @@ func (c *Session) Get(ctx context.Context, token string) *entities.Session {
 }
 
 func (c *Session) SetToContext(ctx context.Context, ses *entities.Session) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	return context.WithValue(ctx, sessionContextKey, ses)
 }
 
@@ -44,7 +48,7 @@ func (c *Session) GetFromContext(ctx context.Context) *entities.Session {
 	case *entities.Session:
 		return ses
 	default:
-		c.r.lg.Fatal("wrong type of session in context")
+		c.r.lg.Errorw("wrong type of session in context", nil)
 		return &entities.Session{}
 	}
 }

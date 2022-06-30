@@ -1,54 +1,37 @@
 package htp
 
 import (
-	"context"
 	"net/http"
-	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/rendau/dop/adapters/logger"
+	dopHttps "github.com/rendau/dop/adapters/server/https"
 	"github.com/rendau/limelog/internal/domain/usecases"
-	"github.com/rendau/limelog/internal/interfaces"
 )
 
 type St struct {
-	lg   interfaces.Logger
-	ucs  *usecases.St
-	cors bool
-
-	server *http.Server
+	lg  logger.Lite
+	ucs *usecases.St
 }
 
-func New(lg interfaces.Logger, addr string, ucs *usecases.St, cors bool) *St {
-	res := &St{
-		lg:   lg,
-		ucs:  ucs,
-		cors: cors,
+func GetHandler(lg logger.Lite, ucs *usecases.St, withCors bool) http.Handler {
+	gin.SetMode(gin.ReleaseMode)
+
+	r := gin.New()
+
+	// middlewares
+
+	r.Use(dopHttps.MwRecovery(lg, nil))
+	if withCors {
+		r.Use(dopHttps.MwCors())
 	}
 
-	res.server = &http.Server{
-		Addr:              addr,
-		Handler:           res.router(),
-		ReadTimeout:       10 * time.Second,
-		ReadHeaderTimeout: 5 * time.Second,
-	}
+	// handlers
 
-	return res
-}
+	s := &St{lg: lg, ucs: ucs}
 
-func (a *St) Start(eChan chan<- error) {
-	go func() {
-		a.lg.Infow("Start http-input", "addr", a.server.Addr)
+	// log
+	r.POST("/log", s.hLog)
 
-		err := a.server.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			a.lg.Errorw("Http server closed", err)
-			eChan <- err
-		}
-	}()
-}
-
-func (a *St) Shutdown(timeout time.Duration) error {
-	ctx, ctxCancel := context.WithTimeout(context.Background(), timeout)
-	defer ctxCancel()
-
-	return a.server.Shutdown(ctx)
+	return r
 }

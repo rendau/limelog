@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rendau/dop/dopTypes"
 	"github.com/rendau/limelog/internal/cns"
 	"github.com/rendau/limelog/internal/domain/entities"
 	"github.com/stretchr/testify/require"
@@ -21,7 +22,7 @@ func TestClean(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	app.ucs.LogHandleMsg(map[string]interface{}{
+	app.ucs.LogHandleMsg(map[string]any{
 		cns.SfTsFieldName:      time.Now().Add(100 * time.Second).UnixMilli(),
 		cns.SfTagFieldName:     "s1",
 		cns.SfMessageFieldName: "msg",
@@ -29,7 +30,7 @@ func TestClean(t *testing.T) {
 		"mid":                  "s1-1",
 	})
 
-	app.ucs.LogHandleMsg(map[string]interface{}{
+	app.ucs.LogHandleMsg(map[string]any{
 		cns.SfTsFieldName:      time.Now().Add(-200 * time.Second).UnixMilli(),
 		cns.SfTagFieldName:     "s1",
 		cns.SfMessageFieldName: "msg",
@@ -37,7 +38,7 @@ func TestClean(t *testing.T) {
 		"mid":                  "s1-2",
 	})
 
-	app.ucs.LogHandleMsg(map[string]interface{}{
+	app.ucs.LogHandleMsg(map[string]any{
 		cns.SfTsFieldName:      time.Now().Add(-200 * time.Second).UnixMilli(),
 		cns.SfTagFieldName:     "s2",
 		cns.SfMessageFieldName: "msg",
@@ -48,7 +49,7 @@ func TestClean(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	logs, _, err := app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
+		ListParams: dopTypes.ListParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.Len(t, logs, 3)
@@ -69,7 +70,7 @@ func TestClean(t *testing.T) {
 	time.Sleep(time.Second)
 
 	logs, _, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
+		ListParams: dopTypes.ListParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.Len(t, logs, 2)
@@ -79,7 +80,7 @@ func TestClean(t *testing.T) {
 	time.Sleep(time.Second)
 
 	logs, _, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
+		ListParams: dopTypes.ListParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.Len(t, logs, 2)
@@ -99,7 +100,7 @@ func TestClean(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	app.ucs.LogHandleMsg(map[string]interface{}{
+	app.ucs.LogHandleMsg(map[string]any{
 		cns.SfTsFieldName:      time.Now().Add(-200 * time.Second).UnixMilli(),
 		cns.SfTagFieldName:     "s1",
 		cns.SfMessageFieldName: "msg",
@@ -110,7 +111,7 @@ func TestClean(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	logs, _, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
+		ListParams: dopTypes.ListParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.Len(t, logs, 2)

@@ -3,12 +3,13 @@ package core
 import (
 	"sync"
 
-	"github.com/rendau/limelog/internal/interfaces"
+	"github.com/rendau/dop/adapters/logger"
+	"github.com/rendau/limelog/internal/adapters/repo"
 )
 
 type St struct {
-	lg       interfaces.Logger
-	db       interfaces.Db
+	lg       logger.Lite
+	repo     repo.Repo
 	testing  bool
 	authPsw  string
 	sesToken string
@@ -27,15 +28,15 @@ type St struct {
 }
 
 func New(
-	lg interfaces.Logger,
-	db interfaces.Db,
+	lg logger.Lite,
+	repo repo.Repo,
 	testing bool,
 	authPsw string,
 	sesToken string,
 ) *St {
 	c := &St{
 		lg:       lg,
-		db:       db,
+		repo:     repo,
 		testing:  testing,
 		authPsw:  authPsw,
 		sesToken: sesToken,

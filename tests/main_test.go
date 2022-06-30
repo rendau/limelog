@@ -1,14 +1,13 @@
 package tests
 
 import (
-	"log"
 	"os"
 	"testing"
 
-	"github.com/rendau/limelog/internal/adapters/db/mongo"
+	dopLoggerZap "github.com/rendau/dop/adapters/logger/zap"
 	"github.com/rendau/limelog/internal/adapters/input/gelf"
-	"github.com/rendau/limelog/internal/adapters/logger/zap"
 	notificationMock "github.com/rendau/limelog/internal/adapters/notification/mock"
+	"github.com/rendau/limelog/internal/adapters/repo/mongo"
 	"github.com/rendau/limelog/internal/domain/core"
 	"github.com/rendau/limelog/internal/domain/usecases"
 	"github.com/spf13/viper"
@@ -23,15 +22,7 @@ func TestMain(m *testing.M) {
 
 	viper.AutomaticEnv()
 
-	app.lg, err = zap.New(
-		"info",
-		true,
-		false,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer app.lg.Sync()
+	app.lg = dopLoggerZap.New("info", true)
 
 	app.db, err = mongo.New(
 		app.lg,
@@ -64,19 +55,15 @@ func TestMain(m *testing.M) {
 
 	app.ucs = usecases.New(
 		app.lg,
-		app.db,
 		app.core,
 	)
 
-	app.inputGelf, err = gelf.NewUDP(app.lg, viper.GetString("INPUT_GELF_ADDR"), app.ucs)
+	resetDb()
+
+	app.inputGelf, err = gelf.Start(app.lg, viper.GetString("INPUT_GELF_ADDR"), app.ucs)
 	if err != nil {
 		app.lg.Fatal(err)
 	}
-
-	resetDb()
-
-	gelfInputEChan := make(chan error, 1000)
-	app.inputGelf.StartUDP(gelfInputEChan)
 
 	// Start tests
 	code := m.Run()

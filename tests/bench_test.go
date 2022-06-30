@@ -22,7 +22,7 @@ func BenchmarkUDPLogs(b *testing.B) {
 	data := make([][]byte, b.N)
 
 	for i := 0; i < b.N; i++ {
-		data[i], err = json.Marshal(map[string]interface{}{
+		data[i], err = json.Marshal(map[string]any{
 			"timestamp":     time.Now().Add(-(time.Duration(i) * time.Second)).UnixMilli(),
 			"short_message": gofakeit.Sentence(12),
 			"level":         gofakeit.RandomString([]string{"debug", "info", "warn", "error", "fatal"}),

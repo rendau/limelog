@@ -3,16 +3,17 @@ package usecases
 import (
 	"context"
 
+	"github.com/rendau/dop/dopTools"
+	"github.com/rendau/limelog/internal/cns"
 	"github.com/rendau/limelog/internal/domain/entities"
-	"github.com/rendau/limelog/internal/domain/util"
 )
 
-func (u *St) LogHandleMsg(msg map[string]interface{}) {
+func (u *St) LogHandleMsg(msg map[string]any) {
 	u.cr.Log.HandleMsg(msg)
 }
 
 func (u *St) LogList(ctx context.Context,
-	pars *entities.LogListParsSt) ([]map[string]interface{}, int64, error) {
+	pars *entities.LogListParsSt) ([]map[string]any, int64, error) {
 	var err error
 
 	ses := u.SessionGetFromContext(ctx)
@@ -21,7 +22,7 @@ func (u *St) LogList(ctx context.Context,
 		return nil, 0, err
 	}
 
-	if err = util.RequirePageSize(pars.PaginationParams, 0); err != nil {
+	if err = dopTools.RequirePageSize(pars.ListParams, cns.MaxPageSize); err != nil {
 		return nil, 0, err
 	}
 

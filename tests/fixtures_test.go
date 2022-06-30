@@ -17,7 +17,7 @@ func BenchmarkGenerateRandomLogs(b *testing.B) {
 	app.core.Log.SetTstDoneChan(doneCh)
 
 	for i := 0; i < 10000; i++ {
-		app.ucs.LogHandleMsg(map[string]interface{}{
+		app.ucs.LogHandleMsg(map[string]any{
 			cns.SfTsFieldName:                    time.Now().Add(-(time.Duration(i) * time.Second)).UnixMilli(),
 			cns.SfMessageFieldName:               gofakeit.Sentence(12),
 			cns.MessageFieldName:                 gofakeit.Sentence(12),

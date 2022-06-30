@@ -1,19 +1,10 @@
 package errs
 
-type Err string
-
-func (e Err) Error() string {
-	return string(e)
-}
+import (
+	"github.com/rendau/dop/dopErrs"
+)
 
 const (
-	BadJson           = Err("bad_json")
-	ServiceNA         = Err("server_not_available")
-	NotAuthorized     = Err("not_authorized")
-	PermissionDenied  = Err("permission_denied")
-	ObjectNotFound    = Err("object_not_found")
-	IncorrectPageSize = Err("incorrect_page_size")
-
-	WrongPassword = Err("wrong_password")
-	BadDuration   = Err("bad_duration")
+	WrongPassword = dopErrs.Err("wrong_password")
+	BadDuration   = dopErrs.Err("bad_duration")
 )

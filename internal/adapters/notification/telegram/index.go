@@ -8,19 +8,19 @@ import (
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/rendau/dop/adapters/logger"
 	"github.com/rendau/limelog/internal/cns"
-	"github.com/rendau/limelog/internal/interfaces"
 )
 
 type St struct {
-	lg       interfaces.Logger
+	lg       logger.Lite
 	botToken string
 	chatId   int64
 
 	botApi *tgbotapi.BotAPI
 }
 
-func New(lg interfaces.Logger, botToken string, chatId int64) (*St, error) {
+func New(lg logger.Lite, botToken string, chatId int64) (*St, error) {
 	var err error
 
 	res := &St{
@@ -38,13 +38,13 @@ func New(lg interfaces.Logger, botToken string, chatId int64) (*St, error) {
 	return res, nil
 }
 
-func (o *St) Send(msg map[string]interface{}) {
+func (o *St) Send(msg map[string]any) {
 	var err error
 	var bytes []byte
 
 	const maxMsgFieldValueSize = 500
 
-	filteredFields := map[string]interface{}{}
+	filteredFields := map[string]any{}
 
 	for k, v := range msg {
 		if k == "msg" {

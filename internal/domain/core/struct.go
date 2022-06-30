@@ -1,11 +1,11 @@
 package core
 
 import (
-	"github.com/rendau/limelog/internal/interfaces"
+	"github.com/rendau/limelog/internal/adapters/notification"
 )
 
 type NotificationProviderSt struct {
 	Id       string
 	Levels   []string
-	Provider interfaces.Notification
+	Provider notification.Notification
 }

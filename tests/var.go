@@ -1,17 +1,17 @@
 package tests
 
 import (
-	"github.com/rendau/limelog/internal/adapters/db/mongo"
+	dopLoggerZap "github.com/rendau/dop/adapters/logger/zap"
 	"github.com/rendau/limelog/internal/adapters/input/gelf"
-	"github.com/rendau/limelog/internal/adapters/logger/zap"
 	notificationMock "github.com/rendau/limelog/internal/adapters/notification/mock"
+	"github.com/rendau/limelog/internal/adapters/repo/mongo"
 	"github.com/rendau/limelog/internal/domain/core"
 	"github.com/rendau/limelog/internal/domain/usecases"
 )
 
 var (
 	app = struct {
-		lg        *zap.St
+		lg        *dopLoggerZap.St
 		db        *mongo.St
 		core      *core.St
 		nf        *notificationMock.St

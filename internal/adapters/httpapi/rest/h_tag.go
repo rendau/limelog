@@ -2,48 +2,36 @@ package rest
 
 import (
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	dopHttps "github.com/rendau/dop/adapters/server/https"
 )
 
-// swagger:route GET /tag tag hTagList
-// Security:
-//   token:
-// Responses:
-//   200: tagListRep
-//   400: errRep
-func (a *St) hTagList(w http.ResponseWriter, r *http.Request) {
-	// swagger:response tagListRep
-	type docRepSt struct {
-		// in:body
-		Body []string
-	}
-
-	result, err := a.ucs.TagList(a.uGetRequestContext(r))
-	if a.uHandleError(err, r, w) {
+// @Router   /tag [get]
+// @Tags     tag
+// @Produce  json
+// @Success  200  {array}  string
+// @Failure  400  {object}  dopTypes.ErrRep
+func (o *St) hTagList(c *gin.Context) {
+	result, err := o.ucs.TagList(o.getRequestContext(c))
+	if dopHttps.Error(c, err) {
 		return
 	}
 
-	a.uRespondJSON(w, result)
+	c.JSON(http.StatusOK, result)
 }
 
-// swagger:route DELETE /tag tag hTagRemove
-// Security:
-//   token:
-// Responses:
-//   200:
-//   400: errRep
-func (a *St) hTagRemove(w http.ResponseWriter, r *http.Request) {
-	// swagger:parameters hTagRemove
-	type docReqSt struct {
-		// in: query
-		Value string `json:"value"`
-	}
+// @Router   /tag/:id [delete]
+// @Tags     tag
+// @Param    id  path  string  true  "id"
+// @Produce  json
+// @Success  200
+// @Failure  400  {object}  dopTypes.ErrRep
+func (o *St) hTagRemove(c *gin.Context) {
+	id := c.Param("id")
 
-	qPars := r.URL.Query()
-
-	err := a.ucs.TagRemove(a.uGetRequestContext(r), qPars.Get("value"))
-	if a.uHandleError(err, r, w) {
+	err := o.ucs.TagRemove(o.getRequestContext(c), id)
+	if dopHttps.Error(c, err) {
 		return
 	}
-
-	w.WriteHeader(200)
 }

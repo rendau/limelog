@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rendau/limelog/internal/adapters/notification"
 	"github.com/rendau/limelog/internal/cns"
-	"github.com/rendau/limelog/internal/interfaces"
 )
 
 const (
@@ -18,21 +18,21 @@ const (
 type Notification struct {
 	r *St
 
-	nfMsgCh chan map[string]interface{}
+	nfMsgCh chan map[string]any
 
 	stg   map[string]*notificationStgItemSt
 	stgMu sync.Mutex
 }
 
 type notificationStgItemSt struct {
-	msg      map[string]interface{}
-	provider interfaces.Notification
+	msg      map[string]any
+	provider notification.Notification
 }
 
 func NewNotification(r *St) *Notification {
 	res := &Notification{
 		r:       r,
-		nfMsgCh: make(chan map[string]interface{}, NfMsgChannelSize),
+		nfMsgCh: make(chan map[string]any, NfMsgChannelSize),
 		stg:     map[string]*notificationStgItemSt{},
 	}
 
@@ -45,7 +45,7 @@ func NewNotification(r *St) *Notification {
 	return res
 }
 
-func (c *Notification) HandleMsg(msg map[string]interface{}) {
+func (c *Notification) HandleMsg(msg map[string]any) {
 	c.nfMsgCh <- msg
 }
 

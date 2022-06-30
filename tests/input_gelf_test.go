@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/rendau/dop/dopTypes"
 	"github.com/rendau/limelog/internal/cns"
 	"github.com/rendau/limelog/internal/domain/entities"
 	"github.com/stretchr/testify/require"
@@ -32,7 +33,7 @@ func TestInputGelf(t *testing.T) {
 	time.Sleep(time.Second)
 
 	logs, cnt, err := app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
+		ListParams: dopTypes.ListParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 1, cnt)
@@ -64,7 +65,7 @@ func TestInputGelf(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
+		ListParams: dopTypes.ListParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 2, cnt)
@@ -96,7 +97,7 @@ func TestInputGelf(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
+		ListParams: dopTypes.ListParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 3, cnt)
@@ -125,8 +126,8 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "tag2", tags[0])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
-		FilterObj: map[string]interface{}{
+		ListParams: dopTypes.ListParams{PageSize: 100},
+		FilterObj: map[string]any{
 			"level": "warn",
 		},
 	})
@@ -136,8 +137,8 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m2", logs[0][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
-		FilterObj: map[string]interface{}{
+		ListParams: dopTypes.ListParams{PageSize: 100},
+		FilterObj: map[string]any{
 			"level": "error",
 		},
 	})
@@ -147,8 +148,8 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m3", logs[0][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
-		FilterObj: map[string]interface{}{
+		ListParams: dopTypes.ListParams{PageSize: 100},
+		FilterObj: map[string]any{
 			"level": "info",
 		},
 	})
@@ -158,9 +159,9 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m1", logs[0][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
-		FilterObj: map[string]interface{}{
-			"level": map[string]interface{}{
+		ListParams: dopTypes.ListParams{PageSize: 100},
+		FilterObj: map[string]any{
+			"level": map[string]any{
 				"$in": []string{"error", "warn"},
 			},
 		},
@@ -172,7 +173,7 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m2", logs[1][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 2},
+		ListParams: dopTypes.ListParams{PageSize: 2},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 3, cnt)
@@ -181,7 +182,7 @@ func TestInputGelf(t *testing.T) {
 	require.Equal(t, "m2", logs[1][cns.SystemFieldPrefix+"mid"])
 
 	logs, cnt, err = app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{Page: 1, PageSize: 2},
+		ListParams: dopTypes.ListParams{Page: 1, PageSize: 2},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 3, cnt)
@@ -228,7 +229,7 @@ func TestNotificationThrottling(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	_, cnt, err := app.ucs.LogList(ctx, &entities.LogListParsSt{
-		PaginationParams: entities.PaginationParams{PageSize: 100},
+		ListParams: dopTypes.ListParams{PageSize: 100},
 	})
 	require.Nil(t, err)
 	require.EqualValues(t, 3, cnt)

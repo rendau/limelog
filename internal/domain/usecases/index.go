@@ -1,27 +1,22 @@
 package usecases
 
 import (
+	"github.com/rendau/dop/adapters/logger"
 	"github.com/rendau/limelog/internal/domain/core"
-	"github.com/rendau/limelog/internal/interfaces"
 )
 
 type St struct {
-	lg interfaces.Logger
+	lg logger.Lite
 
-	db interfaces.Db
 	cr *core.St
 }
 
 func New(
-	lg interfaces.Logger,
-	db interfaces.Db,
+	lg logger.Lite,
 	cr *core.St,
 ) *St {
-	u := &St{
+	return &St{
 		lg: lg,
-		db: db,
 		cr: cr,
 	}
-
-	return u
 }

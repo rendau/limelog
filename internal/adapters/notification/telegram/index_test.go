@@ -5,14 +5,13 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/rendau/limelog/internal/adapters/logger/zap"
+	dopLoggerZap "github.com/rendau/dop/adapters/logger/zap"
 	"github.com/rendau/limelog/internal/cns"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSt_Send(t *testing.T) {
-	lg, err := zap.New("info", true, false)
-	require.Nil(t, err)
+	lg := dopLoggerZap.New("info", true)
 
 	chatIdStr := os.Getenv("CHAT_ID")
 	chatId, err := strconv.ParseInt(chatIdStr, 10, 64)
@@ -22,7 +21,7 @@ func TestSt_Send(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, nf)
 
-	nf.Send(map[string]interface{}{
+	nf.Send(map[string]any{
 		cns.SfTagFieldName: "credit-broker-test",
 		cns.LevelFieldName: "warn",
 		cns.SfTsFieldName:  "2022-05-06T13:26:23+06:00",

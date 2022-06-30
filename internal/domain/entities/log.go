@@ -2,12 +2,19 @@ package entities
 
 import (
 	"time"
+
+	"github.com/rendau/dop/dopTypes"
 )
 
 type LogListParsSt struct {
-	PaginationParams
+	dopTypes.ListParams
 
-	FilterObj map[string]interface{} `json:"filter_obj"`
+	FilterObj map[string]any `json:"filter_obj"`
+}
+
+type LogListRepSt struct {
+	dopTypes.PaginatedListRep
+	Results []map[string]any `json:"results"`
 }
 
 type LogRemoveParsSt struct {

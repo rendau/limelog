@@ -3,41 +3,41 @@ package mock
 import (
 	"sync"
 
-	"github.com/rendau/limelog/internal/interfaces"
+	"github.com/rendau/dop/adapters/logger"
 )
 
 type St struct {
-	lg interfaces.Logger
+	lg logger.Lite
 
-	q  []map[string]interface{}
+	q  []map[string]any
 	mu sync.Mutex
 }
 
-func New(lg interfaces.Logger) *St {
+func New(lg logger.Lite) *St {
 	return &St{
 		lg: lg,
 	}
 }
 
-func (o *St) Send(msg map[string]interface{}) {
+func (o *St) Send(msg map[string]any) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 
 	o.q = append(o.q, msg)
 }
 
-func (o *St) PullAll() []map[string]interface{} {
+func (o *St) PullAll() []map[string]any {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 
 	q := o.q
 
-	o.q = make([]map[string]interface{}, 0)
+	o.q = make([]map[string]any, 0)
 
 	return q
 }
 
-func (o *St) Get(key string, value string) map[string]interface{} {
+func (o *St) Get(key string, value string) map[string]any {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 

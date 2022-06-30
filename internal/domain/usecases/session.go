@@ -3,8 +3,8 @@ package usecases
 import (
 	"context"
 
+	"github.com/rendau/dop/dopErrs"
 	"github.com/rendau/limelog/internal/domain/entities"
-	"github.com/rendau/limelog/internal/domain/errs"
 )
 
 func (u *St) SessionGet(ctx context.Context, token string) *entities.Session {
@@ -13,7 +13,7 @@ func (u *St) SessionGet(ctx context.Context, token string) *entities.Session {
 
 func (u *St) SessionRequireAuth(ses *entities.Session) error {
 	if !ses.Authed {
-		return errs.NotAuthorized
+		return dopErrs.NotAuthorized
 	}
 
 	return nil

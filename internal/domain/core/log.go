@@ -15,7 +15,7 @@ const (
 type Log struct {
 	r *St
 
-	msgCh chan map[string]interface{}
+	msgCh chan map[string]any
 
 	tstDoneCh chan bool
 }
@@ -23,7 +23,7 @@ type Log struct {
 func NewLog(r *St) *Log {
 	res := &Log{
 		r:     r,
-		msgCh: make(chan map[string]interface{}, LogMsgChannelSize),
+		msgCh: make(chan map[string]any, LogMsgChannelSize),
 	}
 
 	for i := 0; i < LogWorkerCount; i++ {
@@ -37,7 +37,7 @@ func (c *Log) SetTstDoneChan(ch chan bool) {
 	c.tstDoneCh = ch
 }
 
-func (c *Log) HandleMsg(msg map[string]interface{}) {
+func (c *Log) HandleMsg(msg map[string]any) {
 	c.msgCh <- msg
 }
 
@@ -94,7 +94,7 @@ func (c *Log) handleMsgRoutine() {
 	}
 }
 
-func (c *Log) Create(ctx context.Context, obj map[string]interface{}) error {
+func (c *Log) Create(ctx context.Context, obj map[string]any) error {
 	// set tag
 	if v, ok := obj[cns.SfTagFieldName]; ok {
 		if tag, ok := v.(string); ok {
@@ -104,13 +104,13 @@ func (c *Log) Create(ctx context.Context, obj map[string]interface{}) error {
 		}
 	}
 
-	return c.r.db.LogCreate(ctx, obj)
+	return c.r.repo.LogCreate(ctx, obj)
 }
 
-func (c *Log) List(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]interface{}, int64, error) {
-	return c.r.db.LogList(ctx, pars)
+func (c *Log) List(ctx context.Context, pars *entities.LogListParsSt) ([]map[string]any, int64, error) {
+	return c.r.repo.LogList(ctx, pars)
 }
 
 func (c *Log) Remove(ctx context.Context, pars *entities.LogRemoveParsSt) error {
-	return c.r.db.LogRemove(ctx, pars)
+	return c.r.repo.LogRemove(ctx, pars)
 }

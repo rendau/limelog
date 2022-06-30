@@ -48,13 +48,13 @@ type udpChunkedMsgSt struct {
 }
 
 type messageSt struct {
-	Version  string                 `json:"version"`
-	Host     string                 `json:"host"`
-	Short    string                 `json:"short_message"`
-	Full     string                 `json:"full_message,omitempty"`
-	TimeUnix float64                `json:"timestamp"`
-	Level    int32                  `json:"level,omitempty"`
-	Facility string                 `json:"facility,omitempty"`
-	Extra    map[string]interface{} `json:"-"`
-	RawExtra json.RawMessage        `json:"-"`
+	Version  string          `json:"version"`
+	Host     string          `json:"host"`
+	Short    string          `json:"short_message"`
+	Full     string          `json:"full_message,omitempty"`
+	TimeUnix float64         `json:"timestamp"`
+	Level    int32           `json:"level,omitempty"`
+	Facility string          `json:"facility,omitempty"`
+	Extra    map[string]any  `json:"-"`
+	RawExtra json.RawMessage `json:"-"`
 }

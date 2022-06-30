@@ -3,65 +3,41 @@ package rest
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+	dopHttps "github.com/rendau/dop/adapters/server/https"
 	"github.com/rendau/limelog/internal/domain/entities"
 )
 
-// swagger:route GET /profile profile hProfileGet
-// Security:
-//   token:
-// Responses:
-//   200: profileGetRep
-//   400: errRep
-func (a *St) hProfileGet(w http.ResponseWriter, r *http.Request) {
-	// swagger:response profileGetRep
-	type docRepSt struct {
-		// in:body
-		Body *entities.ProfileSt
-	}
-
-	repObj, err := a.ucs.ProfileGet(a.uGetRequestContext(r))
-	if a.uHandleError(err, r, w) {
+// @Router   /profile [get]
+// @Tags     profile
+// @Produce  json
+// @Success  200  {object}  entities.ProfileSt
+// @Failure  400  {object}  dopTypes.ErrRep
+func (o *St) hProfileGet(c *gin.Context) {
+	repObj, err := o.ucs.ProfileGet(o.getRequestContext(c))
+	if dopHttps.Error(c, err) {
 		return
 	}
 
-	a.uRespondJSON(w, repObj)
+	c.JSON(http.StatusOK, repObj)
 }
 
-// swagger:route POST /profile/auth profile hProfileAuth
-// Авторизация.
-// Responses:
-//   200: profileAuthRep
-//   400: errRep
-func (a *St) hProfileAuth(w http.ResponseWriter, r *http.Request) {
-	// swagger:parameters hProfileAuth
-	type docReqSt struct {
-		// in: body
-		Body struct {
-			Password string `json:"password"`
-		}
-	}
-
-	// swagger:response profileAuthRep
-	type docRepSt struct {
-		// in:body
-		Body struct {
-			Token string `json:"token"`
-		}
-	}
-
-	reqObj := struct {
-		Password string `json:"password"`
-	}{}
-	if !a.uParseRequestJSON(w, r, &reqObj) {
+// @Router   /profile/auth [post]
+// @Tags     profile
+// @Param    body    body  entities.ProfileAuthReqSt  false  "body"
+// @Produce  json
+// @Success  200  {object}  entities.ProfileAuthRepSt
+// @Failure  400  {object}  dopTypes.ErrRep
+func (o *St) hProfileAuth(c *gin.Context) {
+	reqObj := &entities.ProfileAuthReqSt{}
+	if !dopHttps.BindJSON(c, reqObj) {
 		return
 	}
 
-	token, err := a.ucs.ProfileAuth(a.uGetRequestContext(r), reqObj.Password)
-	if a.uHandleError(err, r, w) {
+	token, err := o.ucs.ProfileAuth(o.getRequestContext(c), reqObj.Password)
+	if dopHttps.Error(c, err) {
 		return
 	}
 
-	a.uRespondJSON(w, struct {
-		Token string `json:"token"`
-	}{token})
+	c.JSON(http.StatusOK, entities.ProfileAuthRepSt{Token: token})
 }

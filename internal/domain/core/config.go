@@ -27,7 +27,7 @@ func (c *Config) Get(ctx context.Context) (*entities.ConfigSt, error) {
 	defer c.vMu.Unlock()
 
 	if c.v == nil {
-		v, err := c.r.db.ConfigGet(ctx)
+		v, err := c.r.repo.ConfigGet(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -61,7 +61,7 @@ func (c *Config) Set(ctx context.Context, config *entities.ConfigSt) error {
 		return err
 	}
 
-	err = c.r.db.ConfigSet(ctx, config)
+	err = c.r.repo.ConfigSet(ctx, config)
 	if err != nil {
 		return err
 	}

@@ -3,55 +3,34 @@ package rest
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+	dopHttps "github.com/rendau/dop/adapters/server/https"
+	"github.com/rendau/dop/dopTypes"
 	"github.com/rendau/limelog/internal/domain/entities"
 )
 
-// swagger:route POST /log/list log hLogList
-// Security:
-//   token:
-// Responses:
-//   200: logListRep
-//   400: errRep
-func (a *St) hLogList(w http.ResponseWriter, r *http.Request) {
-	// swagger:parameters hLogList
-	type docReqSt struct {
-		// in: body
-		Body entities.LogListParsSt
-	}
-
-	// swagger:response logListRep
-	type docRepSt struct {
-		// in:body
-		Body struct {
-			DocPaginatedListRepSt
-			Results []map[string]interface{} `json:"results"`
-		}
-	}
-
+// @Router   /log/list [post]
+// @Tags     log
+// @Param    body  body  entities.LogListParsSt  false  "body"
+// @Success  200  {object}  entities.LogListRepSt
+// @Failure  400  {object}  dopTypes.ErrRep
+func (o *St) hLogList(c *gin.Context) {
 	pars := &entities.LogListParsSt{}
-	if !a.uParseRequestJSON(w, r, pars) {
+	if !dopHttps.BindJSON(c, pars) {
 		return
 	}
 
-	qPars := r.URL.Query()
-
-	a.uExtractPaginationPars(&pars.PaginationParams, qPars)
-
-	paginated := pars.PageSize > 0
-
-	result, tCount, err := a.ucs.LogList(a.uGetRequestContext(r), pars)
-	if a.uHandleError(err, r, w) {
+	result, tCount, err := o.ucs.LogList(o.getRequestContext(c), pars)
+	if dopHttps.Error(c, err) {
 		return
 	}
 
-	if paginated {
-		a.uRespondJSON(w, &PaginatedListRepSt{
+	c.JSON(http.StatusOK, entities.LogListRepSt{
+		PaginatedListRep: dopTypes.PaginatedListRep{
 			Page:       pars.Page,
 			PageSize:   pars.PageSize,
 			TotalCount: tCount,
-			Results:    result,
-		})
-	} else {
-		a.uRespondJSON(w, result)
-	}
+		},
+		Results: result,
+	})
 }
