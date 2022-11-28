@@ -19,7 +19,7 @@ jobs:
 
       - run: go mod download
 
-      - run: go install github.com/swaggo/swag/cmd/swag@latest
+      - run: go install github.com/swaggo/swag/cmd/swag@v1.8.4
 
       - run: make swdoc
 
