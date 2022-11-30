@@ -6,7 +6,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.9.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
-	github.com/rendau/dop v1.1.25
+	github.com/rendau/dop v1.1.26
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe
