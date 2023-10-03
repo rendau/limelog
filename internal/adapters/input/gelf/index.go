@@ -284,15 +284,6 @@ func (s *St) HandleMsg(data []byte) {
 			}
 		}
 
-		if msg == "" {
-			if fMsg, ok := dataObj["msg"]; ok {
-				switch v := fMsg.(type) {
-				case string:
-					msg = v
-				}
-			}
-		}
-
 		res[cns.SfMessageFieldName] = msg
 		res[cns.MessageFieldName] = msg
 
@@ -307,6 +298,13 @@ func (s *St) HandleMsg(data []byte) {
 
 			for k, v := range obj {
 				res[k] = v
+			}
+
+			// level to lower case
+			if v, ok := res[cns.LevelFieldName]; ok {
+				if vStr, ok := v.(string); ok {
+					res[cns.LevelFieldName] = strings.ToLower(vStr)
+				}
 			}
 
 			if v, ok := res["msg"]; ok { // if there "msg" field in json
