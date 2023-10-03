@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"strings"
 
 	"github.com/rendau/limelog/internal/cns"
 	"github.com/rendau/limelog/internal/domain/entities"
@@ -45,6 +46,13 @@ func (c *Log) handleMsgRoutine() {
 	ctx := context.Background()
 
 	for msg := range c.msgCh {
+		// normalize level
+		if v, ok := msg[cns.LevelFieldName]; ok {
+			if vStr, ok := v.(string); ok {
+				msg[cns.LevelFieldName] = strings.ToLower(vStr)
+			}
+		}
+
 		// validate ts
 		v, ok := msg[cns.SfTsFieldName]
 		if !ok {
