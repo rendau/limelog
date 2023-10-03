@@ -87,7 +87,7 @@ func Execute() {
 
 	// START
 
-	app.lg.Infow("Starting")
+	app.lg.Infow("Starting...")
 
 	app.inputHttp = dopServerHttps.Start(
 		conf.InputHttpAddr,

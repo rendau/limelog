@@ -22,7 +22,7 @@ func TestInputGelf(t *testing.T) {
 
 	_, err = udpConn.Write([]byte(`
 	  {
-		"short_message": "{\"level\":\"info\",\"msg\":\"Hello world!\",\"arg1\":\"arg1_value\",\"arg2\":7}",
+		"short_message": "{\"level\":\"INFO\",\"msg\":\"Hello world!\",\"arg1\":\"arg1_value\",\"arg2\":7}",
 		"timestamp": 1633841084,
 		"_tag": "tag1",
 		"_mid": "m1"
@@ -38,7 +38,7 @@ func TestInputGelf(t *testing.T) {
 	require.Nil(t, err)
 	require.EqualValues(t, 1, cnt)
 	require.Len(t, logs, 1)
-	require.Equal(t, "{\"level\":\"info\",\"msg\":\"Hello world!\",\"arg1\":\"arg1_value\",\"arg2\":7}", logs[0][cns.SfMessageFieldName])
+	require.Equal(t, "{\"level\":\"INFO\",\"msg\":\"Hello world!\",\"arg1\":\"arg1_value\",\"arg2\":7}", logs[0][cns.SfMessageFieldName])
 	require.Equal(t, "Hello world!", logs[0][cns.MessageFieldName])
 	require.Equal(t, "Hello world!", logs[0]["msg"])
 	require.Equal(t, "info", logs[0]["level"])
