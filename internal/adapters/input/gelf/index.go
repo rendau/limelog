@@ -249,16 +249,18 @@ func (s *St) HandleMsg(data []byte) {
 	}
 
 	// timestamp
-	if timestamp, ok := dataObj["timestamp"]; ok {
-		switch v := timestamp.(type) {
-		case float64:
-			sec, dec := math.Modf(v)
-			res[cns.SfTsFieldName] = time.Unix(int64(sec), int64(dec*(1e9))).UnixMilli()
-		case int64:
-			res[cns.SfTsFieldName] = time.Unix(v, 0).UnixMilli()
-		default:
-			s.lg.Warnw("Undefined data-type for timestamp", "data_type", reflect.TypeOf(timestamp))
-			res[cns.SfTsFieldName] = time.Now().UnixMilli()
+	{
+		if timestamp, ok := dataObj["timestamp"]; ok {
+			switch v := timestamp.(type) {
+			case float64:
+				sec, dec := math.Modf(v)
+				res[cns.SfTsFieldName] = time.Unix(int64(sec), int64(dec*(1e9))).UnixMilli()
+			case int64:
+				res[cns.SfTsFieldName] = time.Unix(v, 0).UnixMilli()
+			default:
+				s.lg.Warnw("Undefined data-type for timestamp", "data_type", reflect.TypeOf(timestamp))
+				res[cns.SfTsFieldName] = time.Now().UnixMilli()
+			}
 		}
 	}
 
@@ -275,6 +277,15 @@ func (s *St) HandleMsg(data []byte) {
 
 		if msg == "" {
 			if fMsg, ok := dataObj["full_message"]; ok {
+				switch v := fMsg.(type) {
+				case string:
+					msg = v
+				}
+			}
+		}
+
+		if msg == "" {
+			if fMsg, ok := dataObj["msg"]; ok {
 				switch v := fMsg.(type) {
 				case string:
 					msg = v
